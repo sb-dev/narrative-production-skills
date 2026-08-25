@@ -1,0 +1,17 @@
+goal: restore causal motivation for Alice's decision
+sourceFindings:
+  - finding-01
+targets:
+  - beat-051
+  - scene-021
+  - scene-022
+preserve:
+  - Marcus reveal
+  - chapter ending
+  - Alice and James relationship state
+change:
+  - establish new information before Alice changes strategy
+verify:
+  - motivation is credible
+  - preserve constraints survive
+  - downstream continuity remains intact

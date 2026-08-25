@@ -1,0 +1,11 @@
+intent: "A contained speculative mystery about invisible infrastructure"
+audience: adult
+genre: speculative mystery
+medium: short story
+tone: tense, humane, understated
+length: "~2,000 words"
+constraints:
+  - one primary viewpoint character
+  - the central mystery must have a causal resolution
+forbidden:
+  - dream ending

@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "cases": [
+    {
+      "id": "e2e-short-story",
+      "workflow": "brief \u2192 concept \u2192 outline \u2192 scene cards \u2192 draft \u2192 evaluate \u2192 revise",
+      "invariants": [
+        "brief constraints preserved",
+        "revision targets diagnosed scope"
+      ]
+    },
+    {
+      "id": "e2e-candidate-selection",
+      "workflow": "brief \u2192 three distinct concepts \u2192 select \u2192 downstream development",
+      "invariants": [
+        "rejected candidates do not silently drive downstream work"
+      ]
+    },
+    {
+      "id": "e2e-preserve-approved",
+      "workflow": "approved character + ending \u2192 structural revision",
+      "invariants": [
+        "character preserved",
+        "ending preserved",
+        "only affected middle changes"
+      ]
+    },
+    {
+      "id": "e2e-continuity",
+      "workflow": "multi-scene story \u2192 character knowledge changes \u2192 later scene",
+      "invariants": [
+        "planned and canonical remain distinct",
+        "later context contains correct knowledge"
+      ]
+    },
+    {
+      "id": "e2e-screenplay",
+      "workflow": "story artifacts \u2192 scene cards \u2192 Fountain screenplay \u2192 evaluate \u2192 targeted revise",
+      "invariants": [
+        "narrative decisions preserved",
+        "visual-production responsibilities remain out of scope"
+      ]
+    }
+  ]
+}

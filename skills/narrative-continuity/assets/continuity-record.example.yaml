@@ -1,0 +1,14 @@
+entries:
+  - id: fact-017
+    subject: Alice
+    statement: Alice believes Marcus betrayed her
+    scope: character-belief
+    status: canonical
+    establishedIn: scene-023
+  - id: proposition-004
+    statement: Marcus killed David
+    status: uncertain
+    beliefs:
+      alice: true
+      marcus: false
+      detective: unknown

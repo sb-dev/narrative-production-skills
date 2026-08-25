@@ -1,0 +1,36 @@
+{
+  "skill": "narrative-evaluate",
+  "version": 1,
+  "cases": [
+    {
+      "id": "evaluate-normal",
+      "case": "normal",
+      "prompt": "Evaluate a complete scene.",
+      "expected": "Findings cite evidence, identify scope/root cause, and recommend actionable correction."
+    },
+    {
+      "id": "evaluate-draft",
+      "case": "draft",
+      "prompt": "Compare three concept candidates.",
+      "expected": "Stays at concept resolution instead of criticising prose that does not exist."
+    },
+    {
+      "id": "evaluate-refine",
+      "case": "refinement",
+      "prompt": "Verify whether a revision fixed a causal problem.",
+      "expected": "Checks requested fix, preservation constraints and regressions."
+    },
+    {
+      "id": "evaluate-final",
+      "case": "final",
+      "prompt": "Developmentally evaluate a complete manuscript or screenplay.",
+      "expected": "Prioritises major structural/developmental findings before copy polish."
+    },
+    {
+      "id": "evaluate-boundary",
+      "case": "boundary",
+      "prompt": "Evaluate only; do not rewrite.",
+      "expected": "Produces diagnosis/report only. Replacement prose is a failure."
+    }
+  ]
+}

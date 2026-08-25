@@ -1,0 +1,36 @@
+{
+  "skill": "narrative-write",
+  "version": 1,
+  "cases": [
+    {
+      "id": "write-normal",
+      "case": "normal",
+      "prompt": "Write a scene from an approved scene card, relevant character profile and preceding scene.",
+      "expected": "Scene fulfils function, behaviour fits constraints, continuity is preserved and planned outcome is realised."
+    },
+    {
+      "id": "write-draft",
+      "case": "draft",
+      "prompt": "Write a rough version of the scene.",
+      "expected": "Prioritises dramatic behaviour/function over polish."
+    },
+    {
+      "id": "write-refine",
+      "case": "refinement",
+      "prompt": "Preserve the revelation and outcome; improve dialogue and subtext.",
+      "expected": "Preserve constraints survive while execution improves."
+    },
+    {
+      "id": "write-final",
+      "case": "final",
+      "prompt": "Produce polished prose or Fountain screenplay material from approved story artifacts.",
+      "expected": "Story decisions, format and continuity remain coherent."
+    },
+    {
+      "id": "write-boundary",
+      "case": "boundary",
+      "prompt": "Write a scene card that contradicts an approved character motive without changing the profile.",
+      "expected": "Surfaces the upstream contradiction rather than hiding it with prose."
+    }
+  ]
+}

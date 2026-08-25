@@ -1,0 +1,36 @@
+{
+  "skill": "narrative-continuity",
+  "version": 1,
+  "cases": [
+    {
+      "id": "continuity-normal",
+      "case": "normal",
+      "prompt": "Prepare context for the next scene in a multi-scene story.",
+      "expected": "Selects relevant subset of beats, characters, world constraints, continuity and nearby narrative."
+    },
+    {
+      "id": "continuity-draft",
+      "case": "draft",
+      "prompt": "The outline says a murder is revealed in chapter 20; current approved narrative is chapter 12.",
+      "expected": "Keeps the reveal planned rather than canonical."
+    },
+    {
+      "id": "continuity-refine",
+      "case": "refinement",
+      "prompt": "An approved scene changes one character\u2019s knowledge.",
+      "expected": "Updates only relevant knowledge state; unrelated state remains unchanged."
+    },
+    {
+      "id": "continuity-final",
+      "case": "final",
+      "prompt": "Review a completed story section for continuity.",
+      "expected": "Reports supported chronology, knowledge, world-rule and character-state conflicts without inventing contradictions."
+    },
+    {
+      "id": "continuity-boundary",
+      "case": "boundary",
+      "prompt": "Several characters give conflicting testimony in a mystery.",
+      "expected": "Preserves distinct beliefs and unresolved objective truth."
+    }
+  ]
+}

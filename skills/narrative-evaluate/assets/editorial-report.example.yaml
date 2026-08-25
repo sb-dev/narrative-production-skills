@@ -1,0 +1,15 @@
+artifact: scene-023
+lifecycle: refine
+findings:
+  - id: finding-01
+    category: causality
+    severity: major
+    scope: scene
+    location: scene-023
+    evidence:
+      - "Alice changes strategy immediately after receiving information she already knew."
+    diagnosis: "The strategy change lacks a new causal trigger."
+    affected:
+      - beat-052
+      - scene-023
+    recommendation: "Establish new information or pressure before the strategy change."

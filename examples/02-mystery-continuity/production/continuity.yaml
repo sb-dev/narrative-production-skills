@@ -1,0 +1,18 @@
+objectiveTruth:
+  thief: unknown
+  alarmDisabledBy: unknown
+characters:
+  lena:
+    believes:
+      - Tomas disabled the alarm
+    knows:
+      - the east camera was already offline
+  tomas:
+    believes:
+      - the theft began after the lights failed
+    secrets:
+      - he entered the archive an hour earlier
+planned:
+  - reveal the real alarm sequence in scene-08
+canonical:
+  - east camera was offline before the theft

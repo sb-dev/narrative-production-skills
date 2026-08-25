@@ -1,0 +1,23 @@
+{
+  "name": "narrative-production-skills",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Agent Skills for structured AI-assisted narrative production.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "check": "tsc -p tsconfig.json --noEmit",
+    "test": "npm run build && node --test dist/tests/*.test.js",
+    "validate": "npm run build && node dist/scripts/validate-skills.js",
+    "smoke:install": "npm run build && node dist/scripts/smoke-install.js",
+    "smoke:install:codex": "npm run smoke:install -- --agent codex"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.8.3"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

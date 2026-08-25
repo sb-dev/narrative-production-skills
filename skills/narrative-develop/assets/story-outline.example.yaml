@@ -1,0 +1,14 @@
+id: outline-001
+workflowState: draft
+decisionStatus: selected
+derivedFrom:
+  - concept-002
+sections:
+  - id: opening
+    purpose: establish the dispatcher's routine and the impossible train
+  - id: escalation
+    purpose: attempts to trace the train reveal a decades-old closed line
+  - id: turn
+    purpose: the dispatcher realises the train appears before fatal network failures
+  - id: ending
+    purpose: she reroutes a real train, preventing the predicted collision, then the ghost service vanishes

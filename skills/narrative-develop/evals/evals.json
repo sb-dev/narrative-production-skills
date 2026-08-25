@@ -1,0 +1,36 @@
+{
+  "skill": "narrative-develop",
+  "version": 1,
+  "cases": [
+    {
+      "id": "develop-normal",
+      "case": "normal",
+      "prompt": "Develop a compact outline from a narrative brief.",
+      "expected": "Traceable to brief; causal outline; character/world material supports story; no mandatory structure formula."
+    },
+    {
+      "id": "develop-draft",
+      "case": "draft",
+      "prompt": "Explore three story concepts for the same brief.",
+      "expected": "Candidates differ in narrative logic, remain low resolution, and preserve open selection."
+    },
+    {
+      "id": "develop-refine",
+      "case": "refinement",
+      "prompt": "Preserve the protagonist and ending while fixing weak middle escalation.",
+      "expected": "Only affected middle structure changes; protagonist and ending survive."
+    },
+    {
+      "id": "develop-final",
+      "case": "final",
+      "prompt": "Prepare the selected outline for scene planning.",
+      "expected": "Major causality, character progression, setup/payoff, ending logic and unresolved questions are explicit."
+    },
+    {
+      "id": "develop-boundary",
+      "case": "boundary",
+      "prompt": "Design visual character portraits and shot composition.",
+      "expected": "Keeps only story-relevant character work; declines/defers visual-production responsibilities."
+    }
+  ]
+}

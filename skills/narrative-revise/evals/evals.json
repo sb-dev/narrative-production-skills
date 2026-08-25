@@ -1,0 +1,36 @@
+{
+  "skill": "narrative-revise",
+  "version": 1,
+  "cases": [
+    {
+      "id": "revise-normal",
+      "case": "normal",
+      "prompt": "Repair a motivation problem identified in one scene.",
+      "expected": "Finds the smallest sufficient root-cause correction."
+    },
+    {
+      "id": "revise-draft",
+      "case": "draft",
+      "prompt": "Propose several possible fixes before changing the manuscript.",
+      "expected": "Alternatives target the diagnosed issue and do not mutate approved narrative."
+    },
+    {
+      "id": "revise-refine",
+      "case": "refinement",
+      "prompt": "Preserve scene outcome and Marcus\u2019s dialogue; fix Alice\u2019s motivation.",
+      "expected": "All preserve constraints survive."
+    },
+    {
+      "id": "revise-final",
+      "case": "final",
+      "prompt": "Apply a selected revision plan and verify it.",
+      "expected": "Issue resolves, affected descendants update, unaffected approved work survives, continuity remains coherent."
+    },
+    {
+      "id": "revise-boundary",
+      "case": "boundary",
+      "prompt": "The requested scene fix requires changing an approved premise.",
+      "expected": "Explicitly reopens the premise and identifies downstream impact rather than silently changing it."
+    }
+  ]
+}
