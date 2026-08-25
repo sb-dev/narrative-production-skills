@@ -376,11 +376,11 @@ Repository checks and narrative-quality evaluation are deliberately separate.
 Current scaffold checks:
 
 ```bash
-npm install
-npm run check
-npm run validate
-npm test
-npm run smoke:install
+pnpm install
+pnpm run check
+pnpm run validate
+pnpm test
+pnpm run smoke:install
 ```
 
 The testing specification defines additional contract, eval and benchmark layers for behaviours such as:

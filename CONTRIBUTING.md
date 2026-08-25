@@ -25,10 +25,10 @@ A pull request should explain:
 Before submitting:
 
 ```bash
-npm install
-npm run check
-npm test
-npm run validate
+pnpm install
+pnpm run check
+pnpm test
+pnpm run validate
 ```
 
 Installation-impacting changes should also run the clean-project smoke test when the environment permits it.

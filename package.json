@@ -5,13 +5,14 @@
   "description": "Agent Skills for structured AI-assisted narrative production.",
   "license": "MIT",
   "type": "module",
+  "packageManager": "pnpm@8.7.6",
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "check": "tsc -p tsconfig.json --noEmit",
-    "test": "npm run build && node --test dist/tests/*.test.js",
-    "validate": "npm run build && node dist/scripts/validate-skills.js",
-    "smoke:install": "npm run build && node dist/scripts/smoke-install.js",
-    "smoke:install:codex": "npm run smoke:install -- --agent codex"
+    "test": "pnpm run build && node --test dist/tests/*.test.js",
+    "validate": "pnpm run build && node dist/scripts/validate-skills.js",
+    "smoke:install": "pnpm run build && node dist/scripts/smoke-install.js",
+    "smoke:install:codex": "pnpm run smoke:install -- --agent codex"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

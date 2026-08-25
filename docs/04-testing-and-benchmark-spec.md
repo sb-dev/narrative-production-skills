@@ -24,14 +24,14 @@ This document complements `docs/02-creative-skills-workflows-and-artifacts-spec.
 
 | Layer | Question it answers | Model/provider required | Intended command |
 |---|---|---|---|
-| typecheck / validate | Is the repository and skill packaging well formed? | no | `npm run check`, `npm run validate` |
-| unit | Do deterministic repository tools reject malformed input and unsafe states? | no | `npm test` |
-| contract | Do artifact and lifecycle invariants hold on synthetic fixtures? | no | `npm run test:contracts` |
-| evals | Are declared skill behaviours represented by falsifiable cases? | no for structure; opt-in for behaviour | `npm run test:evals` |
-| benchmark — deterministic | Are machine-checkable narrative invariants detected without false positives? | no | `npm run benchmark` |
+| typecheck / validate | Is the repository and skill packaging well formed? | no | `pnpm run check`, `pnpm run validate` |
+| unit | Do deterministic repository tools reject malformed input and unsafe states? | no | `pnpm test` |
+| contract | Do artifact and lifecycle invariants hold on synthetic fixtures? | no | `pnpm run test:contracts` |
+| evals | Are declared skill behaviours represented by falsifiable cases? | no for structure; opt-in for behaviour | `pnpm run test:evals` |
+| benchmark — deterministic | Are machine-checkable narrative invariants detected without false positives? | no | `pnpm run benchmark` |
 | benchmark — semantic, scoring | Does the benchmark score recorded answers correctly? | no | `node tools/run-benchmark.ts --rescore` |
 | benchmark — semantic, collection | Can the installed skills diagnose, route, and bound narrative defects? | opt-in | `RUN_SEMANTIC_BENCHMARK=1 node tools/run-benchmark.ts --repeat 3` |
-| install smoke | Can every intended skill be installed independently into a clean consumer project? | no model required | `npm run smoke:install` |
+| install smoke | Can every intended skill be installed independently into a clean consumer project? | no model required | `pnpm run smoke:install` |
 
 The Stage 11 scaffold already provides repository validation, tests, and installation smoke tooling. Contract, eval-runner, and benchmark commands are implementation requirements for the testing system defined here; they must not be reported as available until implemented.
 
@@ -148,14 +148,14 @@ Required for repository-level tests:
 
 ```text
 Node.js >= 22
-npm
+pnpm
 Git
 ```
 
 Install development dependencies:
 
 ```bash
-npm install
+pnpm install
 ```
 
 Optional deterministic tools such as Fountain parsers, Pandoc, Vale, or LanguageTool are tested only when a case explicitly depends on them.
@@ -165,10 +165,10 @@ A missing optional tool must report `SKIP` or `NOT RUN`; it must not silently su
 ### 5.2 Run Current Scaffold Checks
 
 ```bash
-npm run check
-npm run validate
-npm test
-npm run smoke:install
+pnpm run check
+pnpm run validate
+pnpm test
+pnpm run smoke:install
 ```
 
 These commands exercise the Stage 11 repository scaffold.
@@ -180,7 +180,7 @@ They do **not** constitute the complete narrative benchmark defined by this docu
 Once the contract/eval/benchmark runners are implemented:
 
 ```bash
-npm run test:all
+pnpm run test:all
 ```
 
 The intended order is:
@@ -202,10 +202,10 @@ Exit `0` is the only pass for required deterministic layers.
 ### 5.4 Run One Layer
 
 ```bash
-npm run test:contracts
-npm run test:evals
-npm run benchmark
-npm run smoke:install
+pnpm run test:contracts
+pnpm run test:evals
+pnpm run benchmark
+pnpm run smoke:install
 ```
 
 Run one benchmark class:
