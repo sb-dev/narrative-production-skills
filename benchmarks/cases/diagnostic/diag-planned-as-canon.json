@@ -1,0 +1,35 @@
+{
+  "id": "diag-planned-as-canon",
+  "suite": "diagnostic",
+  "capability": "planned-as-canon",
+  "skills": [
+    "narrative-continuity"
+  ],
+  "rubric": "diagnostic",
+  "cleanControl": false,
+  "prompt": "Continuity: the identity of the caller is planned to be revealed in chapter 8 and is not yet canonical. Chapter 4 dialogue has the protagonist state the caller identity as established fact. Diagnose and route the problem.",
+  "groundTruth": {
+    "defectClasses": [
+      "planned-as-canon"
+    ],
+    "owningArtifacts": [
+      "continuity_record",
+      "narrative_draft"
+    ],
+    "smallestSufficientScope": [
+      "chapter-4 scene"
+    ],
+    "preserve": [
+      "chapter-8 reveal timing"
+    ],
+    "forbiddenChanges": []
+  },
+  "hardGates": [
+    "detection",
+    "evidence",
+    "routing",
+    "scope",
+    "preservation",
+    "boundary"
+  ]
+}

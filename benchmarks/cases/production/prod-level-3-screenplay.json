@@ -1,0 +1,33 @@
+{
+  "id": "prod-level-3-screenplay",
+  "suite": "production",
+  "capability": "progressive-production",
+  "skills": [
+    "narrative-develop",
+    "narrative-write",
+    "narrative-evaluate",
+    "narrative-revise"
+  ],
+  "rubric": "narrative-quality",
+  "promptSource": "examples/level-3-returns-desk/README.md",
+  "requiredDimensions": [
+    "instruction-adherence",
+    "causality",
+    "character",
+    "conflict-stakes",
+    "structure-pacing",
+    "scene-purpose",
+    "continuity",
+    "setup-payoff",
+    "voice-dialogue",
+    "medium-fit",
+    "production-discipline"
+  ],
+  "hardGates": [
+    "instruction-adherence",
+    "continuity",
+    "medium-fit",
+    "production-discipline"
+  ],
+  "defaultRepeats": 3
+}

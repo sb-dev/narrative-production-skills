@@ -1,0 +1,38 @@
+{
+  "id": "diag-preserve-approved-ending",
+  "suite": "diagnostic",
+  "capability": "preserve-set-violation",
+  "skills": [
+    "narrative-revise"
+  ],
+  "rubric": "diagnostic",
+  "cleanControl": false,
+  "prompt": "Revision request: strengthen the weak midpoint. Preserve the approved protagonist identity and approved ending in which Lena chooses not to publish the recording. A proposed revision changes the ending so Lena publishes it. Diagnose.",
+  "groundTruth": {
+    "defectClasses": [
+      "preserve-set-violation"
+    ],
+    "owningArtifacts": [
+      "revision_plan",
+      "narrative_draft"
+    ],
+    "smallestSufficientScope": [
+      "midpoint and affected descendants only"
+    ],
+    "preserve": [
+      "protagonist identity",
+      "approved ending"
+    ],
+    "forbiddenChanges": [
+      "new ending"
+    ]
+  },
+  "hardGates": [
+    "detection",
+    "evidence",
+    "routing",
+    "scope",
+    "preservation",
+    "boundary"
+  ]
+}

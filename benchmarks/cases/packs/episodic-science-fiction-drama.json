@@ -1,0 +1,31 @@
+{
+  "id": "pack-episodic-science-fiction-drama",
+  "suite": "packs",
+  "capability": "extension-pack-adherence",
+  "skills": [
+    "narrative-develop",
+    "narrative-write",
+    "narrative-evaluate",
+    "narrative-revise"
+  ],
+  "pack": "episodic-science-fiction-drama",
+  "rubric": "pack-adherence",
+  "promptSource": "examples/extension-packs/episodic-science-fiction-drama/README.md",
+  "requiredDimensions": [
+    "medium",
+    "genre",
+    "style",
+    "audience",
+    "voice-cast",
+    "pack-consistency",
+    "pack-aware-evaluation",
+    "handoff-boundary"
+  ],
+  "hardGates": [
+    "medium",
+    "pack-consistency",
+    "pack-aware-evaluation",
+    "handoff-boundary"
+  ],
+  "defaultRepeats": 3
+}

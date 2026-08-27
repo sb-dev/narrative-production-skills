@@ -1,0 +1,30 @@
+{
+  "id": "author-pack-create-normal",
+  "suite": "pack-authoring",
+  "capability": "normal",
+  "skills": [
+    "narrative-pack-create"
+  ],
+  "rubric": "pack-authoring",
+  "prompt": "Create a reusable naturalistic audio-drama extension pack with optional ensemble voice casting.",
+  "expectedBehaviour": "Produces a coherent self-contained pack with operational audio-drama guidance, optional authorised voice handling, a showcase README containing an exact prompt, and behavioural evals.",
+  "requiredDimensions": [
+    "necessity",
+    "contract-completeness",
+    "operational-specificity",
+    "self-contained-packaging",
+    "showcase-prompt",
+    "eval-coverage",
+    "voice-safety",
+    "project-boundary"
+  ],
+  "hardGates": [
+    "necessity",
+    "contract-completeness",
+    "self-contained-packaging",
+    "showcase-prompt",
+    "eval-coverage",
+    "project-boundary"
+  ],
+  "defaultRepeats": 3
+}

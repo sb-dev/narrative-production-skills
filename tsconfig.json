@@ -15,5 +15,9 @@
     "rootDir": ".",
     "outDir": "dist"
   },
-  "include": ["scripts/**/*.ts", "tests/**/*.ts"]
+  "include": [
+    "scripts/**/*.ts",
+    "tests/**/*.ts",
+    "tools/**/*.ts"
+  ]
 }

@@ -1,0 +1,61 @@
+{
+  "benchmarkVersion": 2,
+  "caseId": "prod-level-1-short-story",
+  "runId": "scorer-self-test-pass",
+  "repeats": [
+    {
+      "repeat": 1,
+      "dimensions": {
+        "instruction-adherence": 3,
+        "causality": 2,
+        "character": 2,
+        "conflict-stakes": 2,
+        "structure-pacing": 2,
+        "scene-purpose": 2,
+        "continuity": 3,
+        "setup-payoff": 2,
+        "voice-dialogue": 2,
+        "medium-fit": 3,
+        "originality-specificity": 2,
+        "production-discipline": 3
+      },
+      "hardGateFailures": []
+    },
+    {
+      "repeat": 2,
+      "dimensions": {
+        "instruction-adherence": 3,
+        "causality": 2,
+        "character": 3,
+        "conflict-stakes": 2,
+        "structure-pacing": 2,
+        "scene-purpose": 2,
+        "continuity": 3,
+        "setup-payoff": 2,
+        "voice-dialogue": 2,
+        "medium-fit": 3,
+        "originality-specificity": 2,
+        "production-discipline": 3
+      },
+      "hardGateFailures": []
+    },
+    {
+      "repeat": 3,
+      "dimensions": {
+        "instruction-adherence": 3,
+        "causality": 2,
+        "character": 2,
+        "conflict-stakes": 2,
+        "structure-pacing": 3,
+        "scene-purpose": 2,
+        "continuity": 3,
+        "setup-payoff": 2,
+        "voice-dialogue": 2,
+        "medium-fit": 3,
+        "originality-specificity": 2,
+        "production-discipline": 3
+      },
+      "hardGateFailures": []
+    }
+  ]
+}

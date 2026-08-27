@@ -1,0 +1,31 @@
+{
+  "id": "pack-branching-web-mystery",
+  "suite": "packs",
+  "capability": "extension-pack-adherence",
+  "skills": [
+    "narrative-develop",
+    "narrative-write",
+    "narrative-evaluate",
+    "narrative-revise"
+  ],
+  "pack": "branching-web-mystery",
+  "rubric": "pack-adherence",
+  "promptSource": "examples/extension-packs/branching-web-mystery/README.md",
+  "requiredDimensions": [
+    "medium",
+    "genre",
+    "style",
+    "audience",
+    "voice-cast",
+    "pack-consistency",
+    "pack-aware-evaluation",
+    "handoff-boundary"
+  ],
+  "hardGates": [
+    "medium",
+    "pack-consistency",
+    "pack-aware-evaluation",
+    "handoff-boundary"
+  ],
+  "defaultRepeats": 3
+}

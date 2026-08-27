@@ -1,0 +1,30 @@
+{
+  "id": "author-pack-create-refinement",
+  "suite": "pack-authoring",
+  "capability": "refinement",
+  "skills": [
+    "narrative-pack-create"
+  ],
+  "rubric": "pack-authoring",
+  "prompt": "Change an approved pack from heightened dialogue to restrained naturalism while preserving its medium, genre, audience and handoff rules.",
+  "expectedBehaviour": "Updates only style-related defaults/evaluation and preserves unrelated approved pack decisions.",
+  "requiredDimensions": [
+    "necessity",
+    "contract-completeness",
+    "operational-specificity",
+    "self-contained-packaging",
+    "showcase-prompt",
+    "eval-coverage",
+    "voice-safety",
+    "project-boundary"
+  ],
+  "hardGates": [
+    "necessity",
+    "contract-completeness",
+    "self-contained-packaging",
+    "showcase-prompt",
+    "eval-coverage",
+    "project-boundary"
+  ],
+  "defaultRepeats": 3
+}

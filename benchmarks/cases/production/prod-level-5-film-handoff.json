@@ -1,0 +1,34 @@
+{
+  "id": "prod-level-5-film-handoff",
+  "suite": "production",
+  "capability": "progressive-production",
+  "skills": [
+    "narrative-develop",
+    "narrative-write",
+    "narrative-continuity",
+    "narrative-evaluate",
+    "narrative-revise"
+  ],
+  "rubric": "narrative-quality",
+  "promptSource": "examples/level-5-the-orchestra-in-the-walls/README.md",
+  "requiredDimensions": [
+    "instruction-adherence",
+    "causality",
+    "character",
+    "conflict-stakes",
+    "structure-pacing",
+    "scene-purpose",
+    "continuity",
+    "setup-payoff",
+    "voice-dialogue",
+    "medium-fit",
+    "production-discipline"
+  ],
+  "hardGates": [
+    "instruction-adherence",
+    "continuity",
+    "medium-fit",
+    "production-discipline"
+  ],
+  "defaultRepeats": 3
+}

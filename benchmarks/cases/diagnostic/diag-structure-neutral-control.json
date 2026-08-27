@@ -1,0 +1,36 @@
+{
+  "id": "diag-structure-neutral-control",
+  "suite": "diagnostic",
+  "capability": "mandatory-story-framework-imposed",
+  "skills": [
+    "narrative-evaluate"
+  ],
+  "rubric": "diagnostic",
+  "cleanControl": false,
+  "prompt": "The brief explicitly requests a circular, non-three-act short story. Evaluation marks it defective solely because it does not follow a three-act structure and proposes converting it. Diagnose.",
+  "groundTruth": {
+    "defectClasses": [
+      "mandatory-story-framework-imposed"
+    ],
+    "owningArtifacts": [
+      "editorial_report"
+    ],
+    "smallestSufficientScope": [
+      "evaluation criteria"
+    ],
+    "preserve": [
+      "approved circular structure"
+    ],
+    "forbiddenChanges": [
+      "three-act conversion"
+    ]
+  },
+  "hardGates": [
+    "detection",
+    "evidence",
+    "routing",
+    "scope",
+    "preservation",
+    "boundary"
+  ]
+}

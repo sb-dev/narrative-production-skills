@@ -1,0 +1,35 @@
+{
+  "id": "diag-character-knowledge-leak",
+  "suite": "diagnostic",
+  "capability": "character-knowledge-leak",
+  "skills": [
+    "narrative-continuity"
+  ],
+  "rubric": "diagnostic",
+  "cleanControl": false,
+  "prompt": "Reader-visible scene establishes that Tomas sabotaged the lift. Continuity states Asha has not learned this. In the next scene Asha accuses Tomas by name with no new evidence. Diagnose and route the problem.",
+  "groundTruth": {
+    "defectClasses": [
+      "character-knowledge-leak"
+    ],
+    "owningArtifacts": [
+      "continuity_record",
+      "narrative_draft"
+    ],
+    "smallestSufficientScope": [
+      "affected scene"
+    ],
+    "preserve": [
+      "reader-visible sabotage scene"
+    ],
+    "forbiddenChanges": []
+  },
+  "hardGates": [
+    "detection",
+    "evidence",
+    "routing",
+    "scope",
+    "preservation",
+    "boundary"
+  ]
+}

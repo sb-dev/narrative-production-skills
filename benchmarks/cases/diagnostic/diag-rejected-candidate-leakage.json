@@ -1,0 +1,37 @@
+{
+  "id": "diag-rejected-candidate-leakage",
+  "suite": "diagnostic",
+  "capability": "rejected-candidate-leakage",
+  "skills": [
+    "narrative-develop"
+  ],
+  "rubric": "diagnostic",
+  "cleanControl": false,
+  "prompt": "Selected concept ending: Mara reports the fraud publicly. Rejected concept ending: Mara burns the ledger and disappears. The outline ends with Mara burning the ledger. Diagnose and route the problem.",
+  "groundTruth": {
+    "defectClasses": [
+      "rejected-candidate-leakage"
+    ],
+    "owningArtifacts": [
+      "story_concept",
+      "selection-lineage"
+    ],
+    "smallestSufficientScope": [
+      "story_outline"
+    ],
+    "preserve": [
+      "selected ending: Mara reports the fraud publicly"
+    ],
+    "forbiddenChanges": [
+      "burn-the-ledger ending"
+    ]
+  },
+  "hardGates": [
+    "detection",
+    "evidence",
+    "routing",
+    "scope",
+    "preservation",
+    "boundary"
+  ]
+}

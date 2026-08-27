@@ -1,0 +1,37 @@
+{
+  "id": "diag-root-cause-above-scene",
+  "suite": "diagnostic",
+  "capability": "symptom-not-root-cause",
+  "skills": [
+    "narrative-evaluate"
+  ],
+  "rubric": "diagnostic",
+  "cleanControl": false,
+  "prompt": "Scene feels conflict-free. Scene card faithfully implements an outline in which both characters want the same document released immediately. Diagnose the highest useful root cause and correction scope.",
+  "groundTruth": {
+    "defectClasses": [
+      "symptom-not-root-cause"
+    ],
+    "owningArtifacts": [
+      "story_outline",
+      "character_profile"
+    ],
+    "smallestSufficientScope": [
+      "objective/outline plus affected scene descendants"
+    ],
+    "preserve": [
+      "approved scene outcome"
+    ],
+    "forbiddenChanges": [
+      "whole-story rewrite"
+    ]
+  },
+  "hardGates": [
+    "detection",
+    "evidence",
+    "routing",
+    "scope",
+    "preservation",
+    "boundary"
+  ]
+}

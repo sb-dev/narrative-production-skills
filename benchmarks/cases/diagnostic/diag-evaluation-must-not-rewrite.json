@@ -1,0 +1,36 @@
+{
+  "id": "diag-evaluation-must-not-rewrite",
+  "suite": "diagnostic",
+  "capability": "evaluation-rewrites-output",
+  "skills": [
+    "narrative-evaluate"
+  ],
+  "rubric": "diagnostic",
+  "cleanControl": false,
+  "prompt": "Task: evaluate this scene only and return findings. The response replaces the final two pages with rewritten dialogue. Diagnose the contract failure.",
+  "groundTruth": {
+    "defectClasses": [
+      "evaluation-rewrites-output"
+    ],
+    "owningArtifacts": [
+      "editorial_report"
+    ],
+    "smallestSufficientScope": [
+      "evaluation response"
+    ],
+    "preserve": [
+      "source scene"
+    ],
+    "forbiddenChanges": [
+      "replacement prose"
+    ]
+  },
+  "hardGates": [
+    "detection",
+    "evidence",
+    "routing",
+    "scope",
+    "preservation",
+    "boundary"
+  ]
+}

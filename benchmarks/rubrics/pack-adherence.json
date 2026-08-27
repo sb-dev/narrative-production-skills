@@ -1,0 +1,55 @@
+{
+  "id": "pack-adherence",
+  "scale": {
+    "min": 0,
+    "max": 3,
+    "anchors": {
+      "0": "pack ignored/contradicted",
+      "1": "surface-level labels only",
+      "2": "operationally applied",
+      "3": "coherent and distinctive across artifacts"
+    }
+  },
+  "dimensions": [
+    {
+      "id": "medium",
+      "kind": "hard",
+      "description": "Medium changes artifacts, conventions and handoff behaviour where required."
+    },
+    {
+      "id": "genre",
+      "kind": "quality",
+      "description": "Genre expectations shape conflict, information, rhythm or audience experience without becoming a formula."
+    },
+    {
+      "id": "style",
+      "kind": "quality",
+      "description": "Style is expressed through operational writing/performance characteristics, not labels alone."
+    },
+    {
+      "id": "audience",
+      "kind": "quality",
+      "description": "Audience guidance materially affects content only when relevant."
+    },
+    {
+      "id": "voice-cast",
+      "kind": "hard-when-applicable",
+      "description": "Voice roles/performance direction are coherent; no unverified provider IDs are invented."
+    },
+    {
+      "id": "pack-consistency",
+      "kind": "hard",
+      "description": "Pack constraints remain consistent through development, writing, evaluation and revision."
+    },
+    {
+      "id": "pack-aware-evaluation",
+      "kind": "hard",
+      "description": "Intentional pack traits are preserved while genuine defects remain detectable."
+    },
+    {
+      "id": "handoff-boundary",
+      "kind": "hard",
+      "description": "Narrative hands off downstream requirements without taking ownership of visual/audio/game implementation."
+    }
+  ]
+}

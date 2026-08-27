@@ -280,6 +280,94 @@ The host model owns language generation and reasoning.
 
 Narrative Production Skills owns what to develop, which artifacts matter, what must be preserved, what context should be loaded, how narrative quality is evaluated, and where revision should occur.
 
+
+### 8.1 Command Decomposition
+
+Skills remain the user-facing production capabilities. Each skill may decompose its internal behaviour into **skill-local commands** so that one production operation can be invoked, evaluated, and debugged independently.
+
+```text
+User / Calling Agent
+        ↓
+Installable Skill
+        ↓
+Skill orchestration
+        ↓
+One or more skill-local commands
+        ↓
+Artifacts / context / host model
+```
+
+A command is not an installable Agent Skill and does not add another public capability to the catalogue.
+
+The distinction is:
+
+```text
+artifact
+→ production state
+
+skill
+→ coherent user-facing production capability
+
+command
+→ independently testable operation inside one skill
+```
+
+Commands exist to improve execution clarity, reuse inside a skill, failure localisation, and component-level testing. They must not create a second workflow architecture, proprietary command runtime, dispatcher service, or cross-skill API.
+
+Initial command decomposition:
+
+```text
+narrative-develop
+├── develop:concept
+├── develop:character
+├── develop:world
+├── develop:outline
+├── develop:beats
+├── develop:scene-plan
+└── develop:select
+
+narrative-write
+├── write:rough-scene
+├── write:refine-scene
+├── write:prose
+├── write:screenplay
+└── write:discovery
+
+narrative-continuity
+├── continuity:check
+├── continuity:update
+├── continuity:context
+└── continuity:impact
+
+narrative-evaluate
+├── evaluate:artifact
+├── evaluate:scene
+├── evaluate:draft
+└── evaluate:readiness
+
+narrative-revise
+├── revise:diagnose
+├── revise:plan
+├── revise:apply
+└── revise:verify
+```
+
+The skill decides which command or command sequence is appropriate. A user does not need to orchestrate commands manually.
+
+Commands may also be targeted directly by evals or advanced callers when the requested operation is already unambiguous.
+
+Example:
+
+```text
+"Apply this approved revision plan."
+
+narrative-revise
+→ revise:apply
+→ revise:verify
+```
+
+Do not rerun `revise:diagnose` or `revise:plan` merely to preserve a fixed sequence.
+
 ---
 
 ## 9. Execution Layer
@@ -327,11 +415,15 @@ narrative-evaluate
 narrative-revise
 ```
 
-Artifacts are not mapped one-to-one to skills.
+Artifacts and commands are not mapped one-to-one to skills.
 
-The governing rule is:
+The governing rules are:
 
 > **Artifacts represent production state. Skills represent coherent production capabilities.**
+>
+> **Commands represent independently testable operations inside a skill.**
+
+Command decomposition must not increase the number of installable core skills.
 
 ---
 
@@ -1008,12 +1100,13 @@ Do not extract automatically.
 Implement vertically.
 
 ```text
-1. narrative-develop
+1. narrative-develop + its command contracts
 2. draft / selection / approval semantics
-3. narrative-write
-4. narrative-evaluate
-5. narrative-revise
-6. narrative-continuity
+3. narrative-write + its command contracts
+4. narrative-evaluate + its command contracts
+5. narrative-revise + its command contracts
+6. narrative-continuity + its command contracts
+7. command-level evals and skill-orchestration evals
 ```
 
 The first complete vertical slice should prove:
@@ -1092,8 +1185,11 @@ The system is correctly designed when:
 22. shared abstractions are extracted only after proven duplication;
 23. deferred infrastructure remains deferred until core production failures justify it;
 24. consuming projects keep installed skills separate from narrative-production artifacts;
-25. consumer examples grow progressively without requiring a large canonical workspace at the start.
+25. consumer examples grow progressively without requiring a large canonical workspace at the start;
+26. each core skill may decompose into skill-local commands without creating additional installable skills;
+27. command contracts are independently testable and preserve the owning skill's artifact, lifecycle, and boundary rules;
+28. skill orchestration can enter at the smallest command needed rather than replaying an unnecessary fixed sequence.
 
 ---
 
-**Narrative Production Skills — Creative Skills System Specification v3**
+**Narrative Production Skills — Creative Skills System Specification v4**

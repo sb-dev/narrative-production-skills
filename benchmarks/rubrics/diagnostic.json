@@ -1,0 +1,42 @@
+{
+  "id": "diagnostic",
+  "scale": "boolean/ground-truth",
+  "axes": [
+    {
+      "id": "detection",
+      "description": "Identifies the seeded defect class, or correctly identifies a clean control."
+    },
+    {
+      "id": "evidence",
+      "description": "Grounds the finding in the supplied artifacts."
+    },
+    {
+      "id": "routing",
+      "description": "Identifies the highest relevant owning artifact/root cause."
+    },
+    {
+      "id": "scope",
+      "description": "Chooses the smallest sufficient correction scope."
+    },
+    {
+      "id": "preservation",
+      "description": "Preserves approved and explicit preserve-set material."
+    },
+    {
+      "id": "boundary",
+      "description": "Stays inside Narrative Production Skills responsibilities."
+    },
+    {
+      "id": "precision",
+      "description": "Avoids inventing unrelated defects; reported separately from strict pass."
+    }
+  ],
+  "strict": [
+    "detection",
+    "evidence",
+    "routing",
+    "scope",
+    "preservation",
+    "boundary"
+  ]
+}
