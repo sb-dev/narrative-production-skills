@@ -1,10 +1,20 @@
 import { createHash } from "node:crypto";
 import { readFile, readdir, stat } from "node:fs/promises";
-import { basename, dirname, join, relative, resolve } from "node:path";
+import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const suites = ["diagnostic", "production", "packs", "pack-authoring"] as const;
 type SuiteId = (typeof suites)[number];
+
+/**
+ * The six axes that gate a strict diagnostic pass (docs/04 section 9.2), and the full set that is
+ * reported. `precision` is measured and reported in `axisRates` but deliberately excluded from
+ * strict pass, because a reviewer may surface a second genuine defect the fixture did not seed
+ * (docs/04 section 9.1).
+ */
+const diagnosticStrictAxes = ["detection", "evidence", "routing", "scope", "preservation", "boundary"] as const;
+const diagnosticReportedAxes = [...diagnosticStrictAxes, "precision"] as const;
+type DiagnosticAxis = (typeof diagnosticReportedAxes)[number];
 
 type JsonObject = Record<string, unknown>;
 
@@ -14,19 +24,39 @@ export interface BenchmarkCase {
   readonly capability: string;
   readonly skills: readonly string[];
   readonly rubric: string;
+  /** Always populated: from the case file when present, otherwise the manifest suite default. */
+  readonly defaultRepeats: number;
   readonly prompt?: string;
   readonly promptSource?: string;
   readonly requiredDimensions?: readonly string[];
   readonly hardGates?: readonly string[];
-  readonly defaultRepeats?: number;
   readonly cleanControl?: boolean;
-  readonly groundTruth?: {
-    readonly defectClasses?: readonly string[];
-    readonly owningArtifacts?: readonly string[];
-    readonly smallestSufficientScope?: string;
-    readonly preserve?: readonly string[];
-    readonly forbiddenChanges?: readonly string[];
-  };
+  readonly groundTruth?: BenchmarkGroundTruth;
+}
+
+export interface BenchmarkGroundTruth {
+  readonly defectClasses?: readonly string[];
+  readonly owningArtifacts?: readonly string[];
+  readonly smallestSufficientScope?: readonly string[];
+  readonly preserve?: readonly string[];
+  readonly forbiddenChanges?: readonly string[];
+}
+
+export interface BenchmarkManifest {
+  readonly version: number;
+  readonly suites: readonly {
+    readonly id: SuiteId;
+    readonly caseDirectory: string;
+    readonly defaultRepeats: number;
+  }[];
+  readonly rubrics: Readonly<Record<string, string>>;
+}
+
+/** A rubric reduced to what the runner enforces: which dimension ids exist, and which are hard. */
+export interface RubricDefinition {
+  readonly id: string;
+  readonly dimensionIds: readonly string[];
+  readonly hardIds: readonly string[];
 }
 
 export interface BenchmarkValidation {
@@ -41,9 +71,18 @@ export interface ScoreSummary {
   readonly status: "PASS" | "FLAKY" | "FAIL";
   readonly passedRepeats: number;
   readonly totalRepeats: number;
+  readonly expectedRepeats: number;
+  /** True when fewer repeats were recorded than the case requires; a baseline needs the full count. */
+  readonly underRepeated: boolean;
   readonly passRate: number;
   readonly dimensionMedians?: Readonly<Record<string, number>>;
   readonly axisRates?: Readonly<Record<string, number>>;
+}
+
+export interface CaseEntry {
+  readonly case: BenchmarkCase;
+  readonly path: string;
+  readonly raw: string;
 }
 
 async function isFile(path: string): Promise<boolean> {
@@ -70,7 +109,86 @@ function asStringArray(value: unknown): string[] | null {
   return Array.isArray(value) && value.every((item) => typeof item === "string") ? value : null;
 }
 
-function parseCase(value: unknown, source: string): BenchmarkCase {
+function normalise(value: string): string {
+  return value.trim().toLowerCase();
+}
+
+function sameSet(a: readonly string[], b: readonly string[]): boolean {
+  const left = new Set(a);
+  const right = new Set(b);
+  return left.size === right.size && [...left].every((item) => right.has(item));
+}
+
+// -- Manifest -----------------------------------------------------------------------------------
+
+export async function loadManifest(repositoryRoot: string): Promise<BenchmarkManifest> {
+  const source = "benchmarks/manifest.json";
+  const path = resolve(repositoryRoot, source);
+  const value: unknown = JSON.parse(await readFile(path, "utf8"));
+  if (!isObject(value)) throw new Error(`${source}: manifest must be an object`);
+
+  const version = value["version"];
+  if (typeof version !== "number") throw new Error(`${source}: version must be a number`);
+
+  const rawSuites = value["suites"];
+  if (!Array.isArray(rawSuites) || rawSuites.length === 0) {
+    throw new Error(`${source}: suites must be a non-empty array`);
+  }
+  const parsedSuites = rawSuites.map((entry, index) => {
+    if (!isObject(entry)) throw new Error(`${source}: suites[${index}] must be an object`);
+    const id = entry["id"];
+    const caseDirectory = entry["caseDirectory"];
+    const defaultRepeats = entry["defaultRepeats"];
+    if (typeof id !== "string" || !suites.includes(id as SuiteId)) {
+      throw new Error(`${source}: suites[${index}].id is not a known suite: ${String(id)}`);
+    }
+    if (typeof caseDirectory !== "string" || !caseDirectory) {
+      throw new Error(`${source}: suites[${index}].caseDirectory must be a non-empty string`);
+    }
+    if (typeof defaultRepeats !== "number" || !Number.isInteger(defaultRepeats) || defaultRepeats < 1) {
+      throw new Error(`${source}: suites[${index}].defaultRepeats must be a positive integer`);
+    }
+    return { id: id as SuiteId, caseDirectory, defaultRepeats };
+  });
+
+  const rawRubrics = value["rubrics"];
+  if (!isObject(rawRubrics)) throw new Error(`${source}: rubrics must be an object`);
+  const rubrics: Record<string, string> = {};
+  for (const [rubricId, rubricPath] of Object.entries(rawRubrics)) {
+    if (typeof rubricPath !== "string" || !rubricPath) {
+      throw new Error(`${source}: rubrics.${rubricId} must be a non-empty string`);
+    }
+    rubrics[rubricId] = rubricPath;
+  }
+
+  return { version, suites: parsedSuites, rubrics };
+}
+
+// -- Cases --------------------------------------------------------------------------------------
+
+/**
+ * Validates every field of `groundTruth`. The declared type is only true if the parser enforces it:
+ * a bare object cast is how `smallestSufficientScope` came to be declared `string` while every case
+ * file wrote an array, crashing the whole diagnostic suite.
+ */
+function parseGroundTruth(value: unknown, source: string): BenchmarkGroundTruth {
+  if (!isObject(value)) throw new Error(`${source}: groundTruth must be an object`);
+  const fields = ["defectClasses", "owningArtifacts", "smallestSufficientScope", "preserve", "forbiddenChanges"] as const;
+  const known = new Set<string>(fields);
+  for (const key of Object.keys(value)) {
+    if (!known.has(key)) throw new Error(`${source}: unknown groundTruth field ${key}`);
+  }
+  const parsed: Record<string, readonly string[]> = {};
+  for (const field of fields) {
+    if (value[field] === undefined) continue;
+    const items = asStringArray(value[field]);
+    if (!items) throw new Error(`${source}: groundTruth.${field} must be an array of strings`);
+    parsed[field] = items;
+  }
+  return parsed as BenchmarkGroundTruth;
+}
+
+function parseCase(value: unknown, source: string, suiteRepeats: ReadonlyMap<SuiteId, number>): BenchmarkCase {
   if (!isObject(value)) throw new Error(`${source}: case must be an object`);
   const id = value["id"];
   const suite = value["suite"];
@@ -83,29 +201,50 @@ function parseCase(value: unknown, source: string): BenchmarkCase {
   if (!skills || skills.length === 0) throw new Error(`${source}: skills must be a non-empty string array`);
   if (typeof rubric !== "string" || !rubric) throw new Error(`${source}: missing rubric`);
 
+  const suiteId = suite as SuiteId;
   const prompt = typeof value["prompt"] === "string" ? value["prompt"] : undefined;
   const promptSource = typeof value["promptSource"] === "string" ? value["promptSource"] : undefined;
   if ((prompt ? 1 : 0) + (promptSource ? 1 : 0) !== 1) {
     throw new Error(`${source}: define exactly one of prompt or promptSource`);
   }
 
-  const result: BenchmarkCase = {
+  const requiredDimensions = value["requiredDimensions"] === undefined ? undefined : asStringArray(value["requiredDimensions"]);
+  if (value["requiredDimensions"] !== undefined && !requiredDimensions) {
+    throw new Error(`${source}: requiredDimensions must be an array of strings`);
+  }
+  const hardGates = value["hardGates"] === undefined ? undefined : asStringArray(value["hardGates"]);
+  if (value["hardGates"] !== undefined && !hardGates) {
+    throw new Error(`${source}: hardGates must be an array of strings`);
+  }
+
+  const rawRepeats = value["defaultRepeats"];
+  if (rawRepeats !== undefined && (typeof rawRepeats !== "number" || !Number.isInteger(rawRepeats) || rawRepeats < 1)) {
+    throw new Error(`${source}: defaultRepeats must be a positive integer`);
+  }
+  const defaultRepeats = rawRepeats ?? suiteRepeats.get(suiteId);
+  if (defaultRepeats === undefined) throw new Error(`${source}: no defaultRepeats for suite ${suiteId}`);
+
+  const rawCleanControl = value["cleanControl"];
+  if (rawCleanControl !== undefined && typeof rawCleanControl !== "boolean") {
+    throw new Error(`${source}: cleanControl must be a boolean`);
+  }
+
+  const groundTruth = value["groundTruth"] === undefined ? undefined : parseGroundTruth(value["groundTruth"], source);
+
+  return {
     id,
-    suite: suite as SuiteId,
+    suite: suiteId,
     capability,
     skills,
     rubric,
+    defaultRepeats,
     ...(prompt ? { prompt } : {}),
     ...(promptSource ? { promptSource } : {}),
+    ...(requiredDimensions ? { requiredDimensions } : {}),
+    ...(hardGates ? { hardGates } : {}),
+    ...(rawCleanControl !== undefined ? { cleanControl: rawCleanControl } : {}),
+    ...(groundTruth ? { groundTruth } : {}),
   };
-  const requiredDimensions = asStringArray(value["requiredDimensions"]);
-  const hardGates = asStringArray(value["hardGates"]);
-  if (requiredDimensions) Object.assign(result, { requiredDimensions });
-  if (hardGates) Object.assign(result, { hardGates });
-  if (typeof value["defaultRepeats"] === "number") Object.assign(result, { defaultRepeats: value["defaultRepeats"] });
-  if (typeof value["cleanControl"] === "boolean") Object.assign(result, { cleanControl: value["cleanControl"] });
-  if (isObject(value["groundTruth"])) Object.assign(result, { groundTruth: value["groundTruth"] });
-  return result;
 }
 
 async function walkJson(directory: string): Promise<string[]> {
@@ -118,17 +257,21 @@ async function walkJson(directory: string): Promise<string[]> {
   return output.sort();
 }
 
-export async function discoverCases(repositoryRoot: string): Promise<Array<{ case: BenchmarkCase; path: string; raw: string }>> {
+export async function discoverCases(repositoryRoot: string): Promise<CaseEntry[]> {
   const root = resolve(repositoryRoot);
+  const manifest = await loadManifest(root);
+  const suiteRepeats = new Map(manifest.suites.map((suite) => [suite.id, suite.defaultRepeats]));
   const casesRoot = join(root, "benchmarks", "cases");
-  const result: Array<{ case: BenchmarkCase; path: string; raw: string }> = [];
+  const result: CaseEntry[] = [];
   for (const path of await walkJson(casesRoot)) {
     const raw = await readFile(path, "utf8");
     const parsed: unknown = JSON.parse(raw);
-    result.push({ case: parseCase(parsed, relative(root, path)), path, raw });
+    result.push({ case: parseCase(parsed, relative(root, path), suiteRepeats), path, raw });
   }
   return result;
 }
+
+// -- Prompts and rubrics ------------------------------------------------------------------------
 
 export function extractPrompt(markdown: string): string {
   const match = /(?:^|\n)## Prompt\s*\n+```(?:text|markdown)?\s*\n([\s\S]*?)\n```/i.exec(markdown);
@@ -144,20 +287,77 @@ export async function resolvePrompt(repositoryRoot: string, benchmarkCase: Bench
   return extractPrompt(markdown);
 }
 
-async function loadRubricRaw(repositoryRoot: string, benchmarkCase: BenchmarkCase): Promise<string> {
-  const path = resolve(repositoryRoot, "benchmarks", "rubrics", `${benchmarkCase.rubric}.json`);
-  return readFile(path, "utf8");
+function rubricPath(repositoryRoot: string, manifest: BenchmarkManifest, rubricId: string): string {
+  const declared = manifest.rubrics[rubricId];
+  if (!declared) throw new Error(`benchmarks/manifest.json: no rubric registered for ${rubricId}`);
+  return resolve(repositoryRoot, declared);
+}
+
+export function parseRubric(value: unknown, source: string): RubricDefinition {
+  if (!isObject(value)) throw new Error(`${source}: rubric must be an object`);
+  const id = value["id"];
+  if (typeof id !== "string" || !id) throw new Error(`${source}: rubric missing id`);
+
+  const axes = value["axes"];
+  if (Array.isArray(axes)) {
+    const dimensionIds = axes.map((axis, index) => {
+      if (!isObject(axis) || typeof axis["id"] !== "string") throw new Error(`${source}: axes[${index}] missing id`);
+      return axis["id"];
+    });
+    const strict = asStringArray(value["strict"]);
+    if (!strict || strict.length === 0) throw new Error(`${source}: rubric with axes must declare a non-empty strict array`);
+    return { id, dimensionIds, hardIds: strict };
+  }
+
+  const dimensions = value["dimensions"];
+  if (!Array.isArray(dimensions) || dimensions.length === 0) {
+    throw new Error(`${source}: rubric must declare axes or dimensions`);
+  }
+  const dimensionIds: string[] = [];
+  const hardIds: string[] = [];
+  dimensions.forEach((dimension, index) => {
+    if (!isObject(dimension) || typeof dimension["id"] !== "string") {
+      throw new Error(`${source}: dimensions[${index}] missing id`);
+    }
+    dimensionIds.push(dimension["id"]);
+    if (dimension["kind"] === "hard") hardIds.push(dimension["id"]);
+  });
+  return { id, dimensionIds, hardIds };
+}
+
+async function loadRubric(
+  repositoryRoot: string,
+  manifest: BenchmarkManifest,
+  rubricId: string,
+): Promise<{ definition: RubricDefinition; raw: string }> {
+  const path = rubricPath(repositoryRoot, manifest, rubricId);
+  const raw = await readFile(path, "utf8");
+  return { definition: parseRubric(JSON.parse(raw), relative(repositoryRoot, path)), raw };
 }
 
 export async function caseFingerprint(repositoryRoot: string, entry: { case: BenchmarkCase; raw: string }): Promise<string> {
-  const prompt = await resolvePrompt(repositoryRoot, entry.case);
-  const rubricRaw = await loadRubricRaw(repositoryRoot, entry.case);
-  return createHash("sha256").update(entry.raw).update("\0").update(prompt).update("\0").update(rubricRaw).digest("hex");
+  const root = resolve(repositoryRoot);
+  const manifest = await loadManifest(root);
+  const prompt = await resolvePrompt(root, entry.case);
+  const { raw: rubricRaw } = await loadRubric(root, manifest, entry.case.rubric);
+  return createHash("sha256")
+    .update(entry.raw)
+    .update("\0")
+    .update(prompt)
+    .update("\0")
+    .update(rubricRaw)
+    .digest("hex");
 }
+
+// -- Validation ---------------------------------------------------------------------------------
 
 async function listDirectories(path: string): Promise<string[]> {
   if (!(await isDirectory(path))) return [];
-  return (await readdir(path, { withFileTypes: true })).filter((entry) => entry.isDirectory()).map((entry) => entry.name).sort();
+  const entries = await readdir(path, { withFileTypes: true });
+  return entries
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name)
+    .sort();
 }
 
 export async function validateBenchmark(repositoryRoot: string): Promise<BenchmarkValidation> {
@@ -165,11 +365,37 @@ export async function validateBenchmark(repositoryRoot: string): Promise<Benchma
   const errors: string[] = [];
   const warnings: string[] = [];
   const counts: Record<SuiteId, number> = { diagnostic: 0, production: 0, packs: 0, "pack-authoring": 0 };
-  let entries: Awaited<ReturnType<typeof discoverCases>> = [];
+
+  let manifest: BenchmarkManifest;
+  let entries: CaseEntry[];
   try {
+    manifest = await loadManifest(root);
     entries = await discoverCases(root);
   } catch (error) {
     return { errors: [String(error)], warnings, caseCount: 0, suiteCounts: counts };
+  }
+
+  // The manifest is the declared shape of the benchmark; the compiled suite union is what the
+  // runner can actually score. If they drift, one of them is lying about what CI measures.
+  if (!sameSet(manifest.suites.map((suite) => suite.id), [...suites])) {
+    errors.push(`Manifest suites do not match the runner's suites: ${manifest.suites.map((suite) => suite.id).join(", ")}`);
+  }
+  const caseDirectories = new Map(manifest.suites.map((suite) => [suite.id, suite.caseDirectory]));
+
+  // Cached including failures, so one broken rubric reports once rather than once per case.
+  const rubricCache = new Map<string, RubricDefinition | null>();
+  async function rubricFor(rubricId: string): Promise<RubricDefinition | null> {
+    const cached = rubricCache.get(rubricId);
+    if (cached !== undefined) return cached;
+    try {
+      const { definition } = await loadRubric(root, manifest, rubricId);
+      rubricCache.set(rubricId, definition);
+      return definition;
+    } catch (error) {
+      rubricCache.set(rubricId, null);
+      errors.push(`rubric ${rubricId}: ${String(error)}`);
+      return null;
+    }
   }
 
   const ids = new Set<string>();
@@ -180,8 +406,13 @@ export async function validateBenchmark(repositoryRoot: string): Promise<Benchma
     if (ids.has(c.id)) errors.push(`Duplicate benchmark case id: ${c.id}`);
     ids.add(c.id);
 
-    const rubricPath = join(root, "benchmarks", "rubrics", `${c.rubric}.json`);
-    if (!(await isFile(rubricPath))) errors.push(`${c.id}: missing rubric ${c.rubric}`);
+    const expectedDirectory = caseDirectories.get(c.suite);
+    const actualDirectory = dirname(relative(root, entry.path));
+    if (expectedDirectory && actualDirectory !== expectedDirectory) {
+      errors.push(`${c.id}: lives in ${actualDirectory} but suite ${c.suite} is declared as ${expectedDirectory}`);
+    }
+
+    const rubric = await rubricFor(c.rubric);
 
     if (c.promptSource) {
       promptSources.add(c.promptSource);
@@ -196,22 +427,47 @@ export async function validateBenchmark(repositoryRoot: string): Promise<Benchma
       }
     }
 
+    const hardGates = c.hardGates ?? [];
+    if (hardGates.length === 0) errors.push(`${c.id}: case missing hardGates`);
+
     if (c.suite === "diagnostic") {
       if (!c.groundTruth) errors.push(`${c.id}: diagnostic case missing groundTruth`);
-      if (!c.hardGates || c.hardGates.length === 0) errors.push(`${c.id}: diagnostic case missing hardGates`);
+      if (rubric && hardGates.length > 0 && !sameSet(hardGates, rubric.hardIds)) {
+        errors.push(`${c.id}: hardGates must equal the ${c.rubric} rubric's strict axes (${rubric.hardIds.join(", ")})`);
+      }
     } else {
-      if (!c.requiredDimensions || c.requiredDimensions.length === 0) errors.push(`${c.id}: semantic case missing requiredDimensions`);
-      if (!c.hardGates || c.hardGates.length === 0) errors.push(`${c.id}: semantic case missing hardGates`);
+      const required = c.requiredDimensions ?? [];
+      if (required.length === 0) errors.push(`${c.id}: semantic case missing requiredDimensions`);
+      if (rubric) {
+        const known = new Set(rubric.dimensionIds);
+        for (const dimension of required) {
+          if (!known.has(dimension)) errors.push(`${c.id}: requiredDimensions contains unknown dimension ${dimension}`);
+        }
+        const expectedHard = rubric.hardIds.filter((dimension) => required.includes(dimension));
+        if (required.length > 0 && !sameSet(hardGates, expectedHard)) {
+          errors.push(
+            `${c.id}: hardGates must equal the ${c.rubric} rubric's hard dimensions present in requiredDimensions (${expectedHard.join(", ")})`,
+          );
+        }
+      }
+    }
+  }
+
+  // The scorer computes these axes by hand, so the rubric must not silently declare others.
+  const diagnosticRubric = await rubricFor("diagnostic");
+  if (diagnosticRubric) {
+    if (!sameSet(diagnosticRubric.dimensionIds, [...diagnosticReportedAxes])) {
+      errors.push(`diagnostic rubric axes must match the scored axes (${diagnosticReportedAxes.join(", ")})`);
+    }
+    if (!sameSet(diagnosticRubric.hardIds, [...diagnosticStrictAxes])) {
+      errors.push(`diagnostic rubric strict axes must match the strict-pass axes (${diagnosticStrictAxes.join(", ")})`);
     }
   }
 
   const coreExampleDirs = (await listDirectories(join(root, "examples"))).filter((name) => /^level-[1-5]-/.test(name));
-  const coreLevels = new Set(coreExampleDirs.map((name) => name.slice(0, "level-N".length)));
-  for (const level of [...coreLevels].sort()) {
-    const covered = coreExampleDirs.some(
-      (directory) => directory.startsWith(`${level}-`) && promptSources.has(`examples/${directory}/README.md`),
-    );
-    if (!covered) errors.push(`Core example level is not benchmarked: ${level}`);
+  for (const directory of coreExampleDirs) {
+    const source = `examples/${directory}/README.md`;
+    if (!promptSources.has(source)) errors.push(`Core example is not benchmarked: ${source}`);
   }
 
   const extensionPackDirs = await listDirectories(join(root, "examples", "extension-packs"));
@@ -221,12 +477,20 @@ export async function validateBenchmark(repositoryRoot: string): Promise<Benchma
   }
 
   if (counts.diagnostic < 2) errors.push("Diagnostic suite must contain a defect and a clean control");
-  if (!entries.some((entry) => entry.case.suite === "diagnostic" && entry.case.cleanControl === true)) errors.push("Diagnostic suite has no clean control");
-  if (counts.production !== coreLevels.size) warnings.push(`Production benchmark cases (${counts.production}) differ from core example level count (${coreLevels.size})`);
-  if (counts.packs !== extensionPackDirs.length) errors.push(`Pack benchmark cases (${counts.packs}) differ from extension-pack example count (${extensionPackDirs.length})`);
+  if (!entries.some((entry) => entry.case.suite === "diagnostic" && entry.case.cleanControl === true)) {
+    errors.push("Diagnostic suite has no clean control");
+  }
+  if (counts.production !== coreExampleDirs.length) {
+    errors.push(`Production benchmark cases (${counts.production}) differ from core example count (${coreExampleDirs.length})`);
+  }
+  if (counts.packs !== extensionPackDirs.length) {
+    errors.push(`Pack benchmark cases (${counts.packs}) differ from extension-pack example count (${extensionPackDirs.length})`);
+  }
 
   return { errors, warnings, caseCount: entries.length, suiteCounts: counts };
 }
+
+// -- Scoring ------------------------------------------------------------------------------------
 
 function median(values: readonly number[]): number {
   const sorted = [...values].sort((a, b) => a - b);
@@ -246,8 +510,109 @@ function stringSet(value: unknown): Set<string> {
   return new Set(asStringArray(value) ?? []);
 }
 
-function hasIntersection(a: readonly string[], b: Set<string>): boolean {
-  return a.some((item) => b.has(item));
+function scoreDiagnostic(benchmarkCase: BenchmarkCase, repeats: readonly unknown[]): ScoreSummary {
+  const ground = benchmarkCase.groundTruth ?? {};
+  const axisPasses: Record<string, number> = Object.fromEntries(diagnosticReportedAxes.map((axis) => [axis, 0]));
+  let strictPasses = 0;
+
+  for (const rawRepeat of repeats) {
+    if (!isObject(rawRepeat) || !isObject(rawRepeat["diagnosis"])) {
+      throw new Error("Diagnostic repeat must contain diagnosis");
+    }
+    const diagnosis = rawRepeat["diagnosis"];
+
+    const foundDefects = stringSet(diagnosis["defectClasses"]);
+    const expectedDefects = ground.defectClasses ?? [];
+    const detection =
+      benchmarkCase.cleanControl === true
+        ? foundDefects.size === 0
+        : expectedDefects.every((item) => foundDefects.has(item));
+
+    const evidence = (asStringArray(diagnosis["evidence"]) ?? []).length > 0;
+
+    // The rubric asks for the *highest* relevant owning artifact, so the first entry in
+    // `owningArtifacts` is the root cause and naming a downstream artifact alone is not routing.
+    const owners = stringSet(diagnosis["owningArtifacts"]);
+    const primaryOwner = (ground.owningArtifacts ?? [])[0];
+    const routing =
+      primaryOwner === undefined || primaryOwner === "none"
+        ? owners.size === 0 || owners.has("none")
+        : owners.has(primaryOwner);
+
+    const expectedScopes = (ground.smallestSufficientScope ?? []).map(normalise);
+    const rawScope = diagnosis["revisionScope"];
+    const actualScope = normalise(typeof rawScope === "string" ? rawScope : "");
+    const scope =
+      expectedScopes.length === 0 || expectedScopes.includes("none")
+        ? actualScope === "none" || actualScope === ""
+        : expectedScopes.includes(actualScope);
+
+    const preservation = (asStringArray(diagnosis["preserveViolations"]) ?? []).length === 0;
+    const boundary = (asStringArray(diagnosis["boundaryViolations"]) ?? []).length === 0;
+    const precision = (asStringArray(diagnosis["unrelatedFindings"]) ?? []).length === 0;
+
+    const row: Record<DiagnosticAxis, boolean> = {
+      detection,
+      evidence,
+      routing,
+      scope,
+      preservation,
+      boundary,
+      precision,
+    };
+    for (const axis of diagnosticReportedAxes) if (row[axis]) axisPasses[axis] = (axisPasses[axis] ?? 0) + 1;
+    if (diagnosticStrictAxes.every((axis) => row[axis])) strictPasses += 1;
+  }
+
+  return {
+    caseId: benchmarkCase.id,
+    status: statusFromPasses(strictPasses, repeats.length),
+    passedRepeats: strictPasses,
+    totalRepeats: repeats.length,
+    expectedRepeats: benchmarkCase.defaultRepeats,
+    underRepeated: repeats.length < benchmarkCase.defaultRepeats,
+    passRate: strictPasses / repeats.length,
+    axisRates: Object.fromEntries(
+      diagnosticReportedAxes.map((axis) => [axis, (axisPasses[axis] ?? 0) / repeats.length]),
+    ),
+  };
+}
+
+function scoreSemantic(benchmarkCase: BenchmarkCase, repeats: readonly unknown[]): ScoreSummary {
+  const required = benchmarkCase.requiredDimensions ?? [];
+  const values: Record<string, number[]> = Object.fromEntries(required.map((id) => [id, []]));
+  let strictPasses = 0;
+
+  for (const rawRepeat of repeats) {
+    if (!isObject(rawRepeat) || !isObject(rawRepeat["dimensions"])) {
+      throw new Error("Semantic repeat must contain dimensions");
+    }
+    const dimensions = rawRepeat["dimensions"];
+    // docs/04 section 10.4: ready = no hard-gate failure AND every required dimension >= 2.
+    // Hard gates are therefore not a second threshold on the same score; they arrive separately
+    // as `hardGateFailures`, and validateBenchmark keeps `hardGates` aligned with the rubric.
+    let ready = true;
+    for (const id of required) {
+      const value = dimensions[id];
+      if (typeof value !== "number" || value < 0 || value > 3) throw new Error(`Invalid score for ${id}`);
+      values[id]?.push(value);
+      if (value < 2) ready = false;
+    }
+    const hardGateFailures = asStringArray(rawRepeat["hardGateFailures"]) ?? [];
+    if (hardGateFailures.length > 0) ready = false;
+    if (ready) strictPasses += 1;
+  }
+
+  return {
+    caseId: benchmarkCase.id,
+    status: statusFromPasses(strictPasses, repeats.length),
+    passedRepeats: strictPasses,
+    totalRepeats: repeats.length,
+    expectedRepeats: benchmarkCase.defaultRepeats,
+    underRepeated: repeats.length < benchmarkCase.defaultRepeats,
+    passRate: strictPasses / repeats.length,
+    dimensionMedians: Object.fromEntries(required.map((id) => [id, median(values[id] ?? [])])),
+  };
 }
 
 export function scoreResultObject(benchmarkCase: BenchmarkCase, result: unknown): ScoreSummary {
@@ -255,68 +620,9 @@ export function scoreResultObject(benchmarkCase: BenchmarkCase, result: unknown)
   if (result["caseId"] !== benchmarkCase.id) throw new Error(`Result caseId does not match ${benchmarkCase.id}`);
   const repeats = result["repeats"];
   if (!Array.isArray(repeats) || repeats.length === 0) throw new Error("Result must contain repeats");
-
-  if (benchmarkCase.suite === "diagnostic") {
-    const ground = benchmarkCase.groundTruth ?? {};
-    const axes = ["detection", "evidence", "routing", "scope", "preservation", "boundary"] as const;
-    const axisPasses: Record<string, number> = Object.fromEntries(axes.map((axis) => [axis, 0]));
-    let strictPasses = 0;
-    for (const rawRepeat of repeats) {
-      if (!isObject(rawRepeat) || !isObject(rawRepeat["diagnosis"])) throw new Error("Diagnostic repeat must contain diagnosis");
-      const diagnosis = rawRepeat["diagnosis"];
-      const foundDefects = stringSet(diagnosis["defectClasses"]);
-      const expectedDefects = ground.defectClasses ?? [];
-      const detection = benchmarkCase.cleanControl === true ? foundDefects.size === 0 : expectedDefects.every((item) => foundDefects.has(item));
-      const evidence = (asStringArray(diagnosis["evidence"]) ?? []).length > 0;
-      const owners = stringSet(diagnosis["owningArtifacts"]);
-      const expectedOwners = ground.owningArtifacts ?? [];
-      const routing = expectedOwners.length === 0 || expectedOwners.includes("none") ? owners.size === 0 || owners.has("none") : hasIntersection(expectedOwners, owners);
-      const expectedScope = ground.smallestSufficientScope ?? "";
-      const actualScope = typeof diagnosis["revisionScope"] === "string" ? diagnosis["revisionScope"] : "";
-      const scope = expectedScope === "none" ? actualScope === "none" || actualScope === "" : actualScope.trim().toLowerCase() === expectedScope.trim().toLowerCase();
-      const preservation = (asStringArray(diagnosis["preserveViolations"]) ?? []).length === 0;
-      const boundary = (asStringArray(diagnosis["boundaryViolations"]) ?? []).length === 0;
-      const row = { detection, evidence, routing, scope, preservation, boundary };
-      for (const axis of axes) if (row[axis]) axisPasses[axis] = (axisPasses[axis] ?? 0) + 1;
-      if (axes.every((axis) => row[axis])) strictPasses += 1;
-    }
-    return {
-      caseId: benchmarkCase.id,
-      status: statusFromPasses(strictPasses, repeats.length),
-      passedRepeats: strictPasses,
-      totalRepeats: repeats.length,
-      passRate: strictPasses / repeats.length,
-      axisRates: Object.fromEntries(axes.map((axis) => [axis, (axisPasses[axis] ?? 0) / repeats.length])),
-    };
-  }
-
-  const required = benchmarkCase.requiredDimensions ?? [];
-  const hard = new Set(benchmarkCase.hardGates ?? []);
-  const values: Record<string, number[]> = Object.fromEntries(required.map((id) => [id, []]));
-  let strictPasses = 0;
-  for (const rawRepeat of repeats) {
-    if (!isObject(rawRepeat) || !isObject(rawRepeat["dimensions"])) throw new Error("Semantic repeat must contain dimensions");
-    const dimensions = rawRepeat["dimensions"];
-    let ready = true;
-    for (const id of required) {
-      const value = dimensions[id];
-      if (typeof value !== "number" || value < 0 || value > 3) throw new Error(`Invalid score for ${id}`);
-      values[id]?.push(value);
-      if (value < 2) ready = false;
-      if (hard.has(id) && value < 2) ready = false;
-    }
-    const hardGateFailures = asStringArray(rawRepeat["hardGateFailures"]) ?? [];
-    if (hardGateFailures.length > 0) ready = false;
-    if (ready) strictPasses += 1;
-  }
-  return {
-    caseId: benchmarkCase.id,
-    status: statusFromPasses(strictPasses, repeats.length),
-    passedRepeats: strictPasses,
-    totalRepeats: repeats.length,
-    passRate: strictPasses / repeats.length,
-    dimensionMedians: Object.fromEntries(required.map((id) => [id, median(values[id] ?? [])])),
-  };
+  return benchmarkCase.suite === "diagnostic"
+    ? scoreDiagnostic(benchmarkCase, repeats)
+    : scoreSemantic(benchmarkCase, repeats);
 }
 
 export async function scoreResultFile(repositoryRoot: string, resultPath: string): Promise<ScoreSummary> {
@@ -327,13 +633,32 @@ export async function scoreResultFile(repositoryRoot: string, resultPath: string
   const entries = await discoverCases(root);
   const entry = entries.find((item) => item.case.id === result["caseId"]);
   if (!entry) throw new Error(`Unknown benchmark case: ${String(result["caseId"])}`);
-  const expectedFingerprint = await caseFingerprint(root, entry);
+
+  // docs/04 section 13.1 lists the case fingerprint as required evidence. Treating an absent
+  // fingerprint as "nothing to check" is what let an old result file skip staleness detection.
   const suppliedFingerprint = result["caseFingerprint"];
-  if (suppliedFingerprint !== undefined && suppliedFingerprint !== "AUTO" && suppliedFingerprint !== expectedFingerprint) {
-    throw new Error(`STALE RESULT: case fingerprint changed for ${entry.case.id}`);
+  if (suppliedFingerprint === undefined) {
+    throw new Error(`Result missing caseFingerprint for ${entry.case.id} (use "AUTO" only for deliberate local iteration)`);
   }
-  return scoreResultObject(entry.case, result);
+  if (suppliedFingerprint === "AUTO") {
+    console.warn(`WARN: ${entry.case.id}: caseFingerprint is AUTO, so staleness was not checked`);
+  } else {
+    const expectedFingerprint = await caseFingerprint(root, entry);
+    if (suppliedFingerprint !== expectedFingerprint) {
+      throw new Error(`STALE RESULT: case fingerprint changed for ${entry.case.id}`);
+    }
+  }
+
+  const summary = scoreResultObject(entry.case, result);
+  if (summary.underRepeated) {
+    console.warn(
+      `WARN: ${entry.case.id}: ${summary.totalRepeats} repeat(s) recorded but ${summary.expectedRepeats} are required; this is not a baseline`,
+    );
+  }
+  return summary;
 }
+
+// -- CLI ----------------------------------------------------------------------------------------
 
 function diagnosticResponseSchema(): string {
   return `Return the benchmark response as JSON with this shape:\n{\n  "defectClasses": ["..."],\n  "evidence": ["artifact-specific evidence"],\n  "owningArtifacts": ["artifact_type"],\n  "revisionScope": "exact scope from the case when possible",\n  "preserveViolations": [],\n  "boundaryViolations": [],\n  "unrelatedFindings": []\n}`;
@@ -347,10 +672,19 @@ async function main(): Promise<void> {
   const currentFile = fileURLToPath(import.meta.url);
   const repositoryRoot = resolve(dirname(currentFile), "..", "..");
   const args = process.argv.slice(2);
-  const entries = await discoverCases(repositoryRoot);
+
+  const scoreIndex = Math.max(args.indexOf("--score"), args.indexOf("--rescore"));
+  if (scoreIndex >= 0) {
+    const path = args[scoreIndex + 1];
+    if (!path) throw new Error("--score/--rescore requires a result JSON path");
+    console.log(JSON.stringify(await scoreResultFile(repositoryRoot, path), null, 2));
+    return;
+  }
 
   if (args.includes("--list")) {
-    for (const entry of entries) console.log(`${entry.case.id}\t${entry.case.suite}\t${entry.case.capability}`);
+    for (const entry of await discoverCases(repositoryRoot)) {
+      console.log(`${entry.case.id}\t${entry.case.suite}\t${entry.case.capability}`);
+    }
     return;
   }
 
@@ -358,25 +692,18 @@ async function main(): Promise<void> {
   if (caseIndex >= 0) {
     const id = args[caseIndex + 1];
     if (!id) throw new Error("--case requires an id");
-    const entry = entries.find((item) => item.case.id === id);
+    const entry = (await discoverCases(repositoryRoot)).find((item) => item.case.id === id);
     if (!entry) throw new Error(`Unknown benchmark case: ${id}`);
     const prompt = await resolvePrompt(repositoryRoot, entry.case);
     const fingerprint = await caseFingerprint(repositoryRoot, entry);
     console.log(`# ${entry.case.id}`);
     console.log(`suite: ${entry.case.suite}`);
+    console.log(`repeats: ${entry.case.defaultRepeats}`);
     console.log(`fingerprint: ${fingerprint}`);
     console.log("\n## Generation / diagnosis prompt\n");
     console.log(prompt);
     console.log("\n## Measurement contract\n");
     console.log(entry.case.suite === "diagnostic" ? diagnosticResponseSchema() : semanticResponseSchema(entry.case));
-    return;
-  }
-
-  const scoreIndex = Math.max(args.indexOf("--score"), args.indexOf("--rescore"));
-  if (scoreIndex >= 0) {
-    const path = args[scoreIndex + 1];
-    if (!path) throw new Error("--score/--rescore requires a result JSON path");
-    console.log(JSON.stringify(await scoreResultFile(repositoryRoot, path), null, 2));
     return;
   }
 

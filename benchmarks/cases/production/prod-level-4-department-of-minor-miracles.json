@@ -1,15 +1,16 @@
 {
-  "id": "prod-level-1-short-story",
+  "id": "prod-level-4-department-of-minor-miracles",
   "suite": "production",
   "capability": "progressive-production",
   "skills": [
     "narrative-develop",
     "narrative-write",
+    "narrative-continuity",
     "narrative-evaluate",
     "narrative-revise"
   ],
   "rubric": "narrative-quality",
-  "promptSource": "examples/level-1-tomorrows-receipt/README.md",
+  "promptSource": "examples/level-4-department-of-minor-miracles/README.md",
   "requiredDimensions": [
     "instruction-adherence",
     "causality",

@@ -1,0 +1,32 @@
+{
+  "benchmarkVersion": 3,
+  "caseId": "diag-preserve-approved-ending",
+  "caseFingerprint": "AUTO",
+  "runId": "scorer-self-test-precision-flag",
+  "repeats": [
+    {
+      "repeat": 1,
+      "diagnosis": {
+        "defectClasses": ["preserve-set-violation"],
+        "evidence": ["The proposed revision publishes the recording, contradicting the approved ending."],
+        "owningArtifacts": ["revision_plan"],
+        "revisionScope": "midpoint and affected descendants only",
+        "preserveViolations": [],
+        "boundaryViolations": [],
+        "unrelatedFindings": []
+      }
+    },
+    {
+      "repeat": 2,
+      "diagnosis": {
+        "defectClasses": ["preserve-set-violation"],
+        "evidence": ["The revision plan edits approved preserve-set material rather than the weak midpoint."],
+        "owningArtifacts": ["revision_plan"],
+        "revisionScope": "midpoint and affected descendants only",
+        "preserveViolations": [],
+        "boundaryViolations": [],
+        "unrelatedFindings": ["the opening paragraph could be tightened"]
+      }
+    }
+  ]
+}

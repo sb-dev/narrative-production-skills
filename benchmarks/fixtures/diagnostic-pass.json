@@ -1,0 +1,50 @@
+{
+  "benchmarkVersion": 3,
+  "caseId": "diag-preserve-approved-ending",
+  "caseFingerprint": "AUTO",
+  "runId": "scorer-self-test-diagnostic-pass",
+  "repeats": [
+    {
+      "repeat": 1,
+      "diagnosis": {
+        "defectClasses": ["preserve-set-violation"],
+        "evidence": [
+          "The approved ending states that Lena chooses not to publish the recording; the proposed revision has her publish it."
+        ],
+        "owningArtifacts": ["revision_plan"],
+        "revisionScope": "midpoint and affected descendants only",
+        "preserveViolations": [],
+        "boundaryViolations": [],
+        "unrelatedFindings": []
+      }
+    },
+    {
+      "repeat": 2,
+      "diagnosis": {
+        "defectClasses": ["preserve-set-violation"],
+        "evidence": [
+          "The revision plan reaches past the weak midpoint into the approved ending, which is in the preserve set."
+        ],
+        "owningArtifacts": ["revision_plan", "narrative_draft"],
+        "revisionScope": "Midpoint and affected descendants only",
+        "preserveViolations": [],
+        "boundaryViolations": [],
+        "unrelatedFindings": []
+      }
+    },
+    {
+      "repeat": 3,
+      "diagnosis": {
+        "defectClasses": ["preserve-set-violation"],
+        "evidence": [
+          "Approved protagonist identity and approved ending are both listed as preserve-set material in the revision request."
+        ],
+        "owningArtifacts": ["revision_plan"],
+        "revisionScope": "  midpoint and affected descendants only  ",
+        "preserveViolations": [],
+        "boundaryViolations": [],
+        "unrelatedFindings": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "benchmarkVersion": 3,
+  "caseId": "diag-preserve-approved-ending",
+  "caseFingerprint": "AUTO",
+  "runId": "scorer-self-test-diagnostic-fail",
+  "repeats": [
+    {
+      "repeat": 1,
+      "diagnosis": {
+        "defectClasses": ["preserve-set-violation"],
+        "evidence": ["The ending reads differently from the approved one."],
+        "owningArtifacts": ["narrative_draft"],
+        "revisionScope": "midpoint and affected descendants only",
+        "preserveViolations": [],
+        "boundaryViolations": [],
+        "unrelatedFindings": []
+      }
+    },
+    {
+      "repeat": 2,
+      "diagnosis": {
+        "defectClasses": ["preserve-set-violation"],
+        "evidence": ["The proposed revision changes the ending."],
+        "owningArtifacts": ["revision_plan"],
+        "revisionScope": "rewrite the whole story",
+        "preserveViolations": [],
+        "boundaryViolations": [],
+        "unrelatedFindings": []
+      }
+    },
+    {
+      "repeat": 3,
+      "diagnosis": {
+        "defectClasses": ["weak-midpoint"],
+        "evidence": [],
+        "owningArtifacts": ["narrative_draft"],
+        "revisionScope": "every scene after the midpoint",
+        "preserveViolations": ["approved ending"],
+        "boundaryViolations": ["proposed final cover art"],
+        "unrelatedFindings": ["the title could be stronger"]
+      }
+    }
+  ]
+}

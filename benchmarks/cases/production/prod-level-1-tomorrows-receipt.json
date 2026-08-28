@@ -1,16 +1,15 @@
 {
-  "id": "prod-level-2-continuity",
+  "id": "prod-level-1-tomorrows-receipt",
   "suite": "production",
   "capability": "progressive-production",
   "skills": [
     "narrative-develop",
     "narrative-write",
-    "narrative-continuity",
     "narrative-evaluate",
     "narrative-revise"
   ],
   "rubric": "narrative-quality",
-  "promptSource": "examples/level-2-wedding-table-nine/README.md",
+  "promptSource": "examples/level-1-tomorrows-receipt/README.md",
   "requiredDimensions": [
     "instruction-adherence",
     "causality",
@@ -22,6 +21,7 @@
     "setup-payoff",
     "voice-dialogue",
     "medium-fit",
+    "originality-specificity",
     "production-discipline"
   ],
   "hardGates": [

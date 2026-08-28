@@ -1,0 +1,32 @@
+{
+  "benchmarkVersion": 3,
+  "caseId": "diag-clean-control",
+  "caseFingerprint": "AUTO",
+  "runId": "scorer-self-test-clean-control-fail",
+  "repeats": [
+    {
+      "repeat": 1,
+      "diagnosis": {
+        "defectClasses": ["continuity-break"],
+        "evidence": ["Invented a chronology problem that the supplied artifacts do not contain."],
+        "owningArtifacts": ["continuity_record"],
+        "revisionScope": "affected scene",
+        "preserveViolations": [],
+        "boundaryViolations": [],
+        "unrelatedFindings": []
+      }
+    },
+    {
+      "repeat": 2,
+      "diagnosis": {
+        "defectClasses": ["weak-scene-conflict"],
+        "evidence": ["Reported a craft opinion as a production defect on a clean control."],
+        "owningArtifacts": ["story_outline"],
+        "revisionScope": "affected scene",
+        "preserveViolations": [],
+        "boundaryViolations": [],
+        "unrelatedFindings": []
+      }
+    }
+  ]
+}

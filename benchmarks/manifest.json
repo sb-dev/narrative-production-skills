@@ -1,6 +1,6 @@
 {
   "name": "Narrative Production Skills Capability Benchmark",
-  "version": 2,
+  "version": 3,
   "principles": [
     "measure capability profiles, not one story-quality score",
     "separate deterministic contract checks from semantic judgement",
@@ -18,7 +18,7 @@
     },
     {
       "id": "production",
-      "description": "Five progressive end-to-end examples exercising complete production behaviour.",
+      "description": "Every progressive example, three at each of the five levels, exercising complete production behaviour.",
       "caseDirectory": "benchmarks/cases/production",
       "defaultRepeats": 3,
       "releaseTier": "core"

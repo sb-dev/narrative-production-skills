@@ -230,8 +230,13 @@ benchmarks/
 │   ├── packs/
 │   └── pack-authoring/
 └── fixtures/
-    ├── scorer-pass.json
-    └── scorer-fail.json
+    ├── semantic-pass.json
+    ├── semantic-fail.json
+    ├── diagnostic-pass.json
+    ├── diagnostic-fail.json
+    ├── diagnostic-clean-control-pass.json
+    ├── diagnostic-clean-control-fail.json
+    └── diagnostic-precision-flag.json
 
 skills/<skill>/
 ├── commands/
@@ -329,7 +334,7 @@ production:       15
 packs:           12
 pack-authoring:   5
 -------------------
-total:           32
+total:           42
 ```
 
 ### 7.4 Prepare One Case
@@ -344,7 +349,7 @@ Then:
 
 ```bash
 node dist/tools/run-benchmark.js \
-  --case prod-level-1-short-story
+  --case prod-level-1-tomorrows-receipt
 ```
 
 The runner prints:
@@ -558,6 +563,10 @@ weak scene
 ```
 
 A prose rewrite fails routing when the root cause is structural.
+
+A case's `owningArtifacts` ground truth is **ordered**: the first entry is the root cause and the
+rest are the artifacts it propagates into. Routing is scored against the first entry, so naming only
+a downstream artifact does not pass.
 
 #### Scope
 
@@ -840,6 +849,11 @@ hard-gate failures
 
 Use at least three repeats for a baseline.
 
+Every case carries a repeat count: its own `defaultRepeats`, or the suite default from
+`benchmarks/manifest.json`. Scoring reports `expectedRepeats` and `underRepeated`, and warns when a
+result records fewer repeats than the case requires. A single repeat can still score `PASS` — it can
+never be `FLAKY` — so an under-repeated result is a measurement, not a baseline.
+
 Report:
 
 ```text
@@ -899,11 +913,15 @@ rubric
 
 A recorded result against a different fingerprint is stale.
 
-The runner refuses an explicitly mismatched fingerprint with:
+The runner refuses a mismatched fingerprint with:
 
 ```text
 STALE RESULT
 ```
+
+The fingerprint is required evidence (section 13.1), so the runner also refuses a result that omits
+it rather than treating an absent fingerprint as nothing to check. Reserve `"AUTO"` for deliberate
+local iteration: it skips the staleness comparison and warns that it did.
 
 Do not compare scores across changed prompts or rubrics as though they measured the same thing.
 
@@ -1089,11 +1107,12 @@ No production baseline has been recorded yet.
 Current measurable facts are repository coverage only:
 
 ```text
-benchmark cases:       32
+benchmark cases:       42
 diagnostic:            10
 progressive production: 15
 extension packs:       12
 pack authoring:         5
+core example coverage: 15/15
 extension-pack showcase coverage: 12/12
 command contracts implemented: 0/29 (specified; implementation pending)
 command eval minimum target: 58

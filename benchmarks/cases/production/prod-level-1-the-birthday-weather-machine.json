@@ -1,16 +1,15 @@
 {
-  "id": "prod-level-5-film-handoff",
+  "id": "prod-level-1-the-birthday-weather-machine",
   "suite": "production",
   "capability": "progressive-production",
   "skills": [
     "narrative-develop",
     "narrative-write",
-    "narrative-continuity",
     "narrative-evaluate",
     "narrative-revise"
   ],
   "rubric": "narrative-quality",
-  "promptSource": "examples/level-5-the-orchestra-in-the-walls/README.md",
+  "promptSource": "examples/level-1-the-birthday-weather-machine/README.md",
   "requiredDimensions": [
     "instruction-adherence",
     "causality",
@@ -22,6 +21,7 @@
     "setup-payoff",
     "voice-dialogue",
     "medium-fit",
+    "originality-specificity",
     "production-discipline"
   ],
   "hardGates": [
