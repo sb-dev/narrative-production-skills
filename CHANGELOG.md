@@ -21,8 +21,10 @@ All notable project changes should be recorded here.
 - Fixed the diagnostic scorer crashing on every diagnostic case: `smallestSufficientScope` is a list of acceptable phrasings, matched after trimming and case folding, not a single string.
 - Validated `groundTruth` field by field when parsing a case, so a case file can no longer contradict the declared type without failing.
 - Scored the rubric's `precision` axis from `unrelatedFindings` instead of discarding it; it is reported in `axisRates` and stays outside strict pass.
-- Routed diagnoses against the first entry of `owningArtifacts`, the root cause, rather than accepting any downstream artifact.
 - Removed a hard-gate branch in semantic scoring that could never fire, leaving readiness as the specification defines it.
+- A malformed `hardGateFailures` value now throws instead of reading as "no gate failed", which could publish a failing run as a green baseline.
+- Diagnostic ground truth must declare a non-empty `owningArtifacts` and `smallestSufficientScope`; omitting them silently inverted the routing and scope axes so that refusing to answer scored a pass.
+- `defectClasses` and `owningArtifacts` comparisons are trimmed and case folded, matching how revision scope was already compared.
 
 ### Changed
 

@@ -9,7 +9,7 @@
       "diagnosis": {
         "defectClasses": ["preserve-set-violation"],
         "evidence": ["The ending reads differently from the approved one."],
-        "owningArtifacts": ["narrative_draft"],
+        "owningArtifacts": ["story_outline"],
         "revisionScope": "midpoint and affected descendants only",
         "preserveViolations": [],
         "boundaryViolations": [],

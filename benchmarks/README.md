@@ -58,9 +58,15 @@ recorded than the case requires — a single repeat can score `PASS` but is not 
 
 ## Diagnostic ground truth
 
-`owningArtifacts` is ordered: the **first** entry is the root cause, and routing is scored against
-it. Naming only a downstream artifact does not pass routing, because the rubric asks for the highest
-relevant owning artifact.
+`owningArtifacts` is the **set** of artifacts a correct routing may name — not an ordered
+root-cause-first list. Several cases deliberately list both the authoritative artifact that must not
+change and the artifact the correction belongs to (`world_bible` with `beat_sheet`,
+`continuity_record` with `narrative_draft`), so routing passes on any of them. Comparisons of
+`defectClasses` and `owningArtifacts` are trimmed and case folded.
+
+Diagnostic ground truth must declare a non-empty `owningArtifacts` and `smallestSufficientScope`;
+omitting them would invert the routing and scope axes so that refusing to answer scored a pass. Use
+`["none"]` when the correct answer is to change nothing.
 
 `smallestSufficientScope` is a list of acceptable phrasings; a recorded `revisionScope` matches if it
 equals any of them after trimming and case folding. Use `["none"]` when the correct answer is to

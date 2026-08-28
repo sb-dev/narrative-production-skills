@@ -432,6 +432,18 @@ export async function validateBenchmark(repositoryRoot: string): Promise<Benchma
 
     if (c.suite === "diagnostic") {
       if (!c.groundTruth) errors.push(`${c.id}: diagnostic case missing groundTruth`);
+      else {
+        // Absent is not permissive: scoreDiagnostic reads a missing owner or scope as "expect
+        // nothing", which inverts routing and scope so that refusing to answer passes. Both are
+        // required; a case that legitimately expects no correction says so with ["none"].
+        for (const field of ["owningArtifacts", "smallestSufficientScope"] as const) {
+          if ((c.groundTruth[field] ?? []).length === 0) {
+            errors.push(
+              `${c.id}: diagnostic groundTruth.${field} must be non-empty (use ["none"] when nothing should change)`,
+            );
+          }
+        }
+      }
       if (rubric && hardGates.length > 0 && !sameSet(hardGates, rubric.hardIds)) {
         errors.push(`${c.id}: hardGates must equal the ${c.rubric} rubric's strict axes (${rubric.hardIds.join(", ")})`);
       }
@@ -506,8 +518,9 @@ function statusFromPasses(passed: number, total: number): "PASS" | "FLAKY" | "FA
   return "FLAKY";
 }
 
-function stringSet(value: unknown): Set<string> {
-  return new Set(asStringArray(value) ?? []);
+/** Identifier comparisons are normalised, so casing and stray whitespace are not scored as errors. */
+function normalisedSet(value: unknown): Set<string> {
+  return new Set((asStringArray(value) ?? []).map(normalise));
 }
 
 function scoreDiagnostic(benchmarkCase: BenchmarkCase, repeats: readonly unknown[]): ScoreSummary {
@@ -521,8 +534,8 @@ function scoreDiagnostic(benchmarkCase: BenchmarkCase, repeats: readonly unknown
     }
     const diagnosis = rawRepeat["diagnosis"];
 
-    const foundDefects = stringSet(diagnosis["defectClasses"]);
-    const expectedDefects = ground.defectClasses ?? [];
+    const foundDefects = normalisedSet(diagnosis["defectClasses"]);
+    const expectedDefects = (ground.defectClasses ?? []).map(normalise);
     const detection =
       benchmarkCase.cleanControl === true
         ? foundDefects.size === 0
@@ -530,14 +543,17 @@ function scoreDiagnostic(benchmarkCase: BenchmarkCase, repeats: readonly unknown
 
     const evidence = (asStringArray(diagnosis["evidence"]) ?? []).length > 0;
 
-    // The rubric asks for the *highest* relevant owning artifact, so the first entry in
-    // `owningArtifacts` is the root cause and naming a downstream artifact alone is not routing.
-    const owners = stringSet(diagnosis["owningArtifacts"]);
-    const primaryOwner = (ground.owningArtifacts ?? [])[0];
+    // `owningArtifacts` is the SET of artifacts a correct routing may name for this defect; it is
+    // not ordered root-cause-first. In several cases the authoritative artifact — the one in the
+    // preserve set, which must not change — is listed alongside the one the correction belongs to
+    // (world_bible before beat_sheet, continuity_record before narrative_draft), so requiring a
+    // particular entry would fail the correct answer. See benchmarks/README.md.
+    const owners = normalisedSet(diagnosis["owningArtifacts"]);
+    const expectedOwners = (ground.owningArtifacts ?? []).map(normalise);
     const routing =
-      primaryOwner === undefined || primaryOwner === "none"
+      expectedOwners.length === 0 || expectedOwners.includes("none")
         ? owners.size === 0 || owners.has("none")
-        : owners.has(primaryOwner);
+        : expectedOwners.some((owner) => owners.has(owner));
 
     const expectedScopes = (ground.smallestSufficientScope ?? []).map(normalise);
     const rawScope = diagnosis["revisionScope"];
@@ -598,7 +614,11 @@ function scoreSemantic(benchmarkCase: BenchmarkCase, repeats: readonly unknown[]
       values[id]?.push(value);
       if (value < 2) ready = false;
     }
-    const hardGateFailures = asStringArray(rawRepeat["hardGateFailures"]) ?? [];
+    // A malformed value must throw rather than read as "no gate failed": scoring a hard-gate
+    // failure as PASS is the one shape of bad input that publishes a false green.
+    const rawFailures = rawRepeat["hardGateFailures"];
+    const hardGateFailures = rawFailures === undefined ? [] : asStringArray(rawFailures);
+    if (!hardGateFailures) throw new Error("hardGateFailures must be an array of strings");
     if (hardGateFailures.length > 0) ready = false;
     if (ready) strictPasses += 1;
   }

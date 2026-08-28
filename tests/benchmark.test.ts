@@ -124,11 +124,60 @@ test("diagnostic scorer distinguishes a correct diagnosis from a misrouted one",
   const failing = scoreResultObject(entry.case, await fixture("diagnostic-fail"));
   assert.equal(failing.status, "FAIL");
   assert.equal(failing.passedRepeats, 0);
-  // Naming only the downstream draft is not routing to the root cause, and a scope outside the
-  // ground-truth set is not the smallest sufficient correction.
-  assert.equal(failing.axisRates?.["routing"], 1 / 3);
+  // Repeat 1 names an artifact outside the ground-truth set, repeat 2 gives a scope outside it,
+  // repeat 3 misses the defect entirely and violates the preserve set.
+  assert.equal(failing.axisRates?.["routing"], 2 / 3);
   assert.equal(failing.axisRates?.["scope"], 1 / 3);
   assert.equal(failing.axisRates?.["preservation"], 2 / 3);
+});
+
+// owningArtifacts is a set, not a root-cause-first list: several cases deliberately name both the
+// artifact that must not change and the one the correction belongs to.
+test("routing accepts any listed owning artifact, and rejects one that is not listed", async () => {
+  const entry = await caseEntry("diag-world-rule-violation");
+  const ground = entry.case.groundTruth ?? {};
+  const withOwners = (owningArtifacts: readonly string[]): unknown => ({
+    caseId: entry.case.id,
+    repeats: [
+      {
+        repeat: 1,
+        diagnosis: {
+          defectClasses: [...(ground.defectClasses ?? [])],
+          evidence: ["synthetic"],
+          owningArtifacts,
+          revisionScope: (ground.smallestSufficientScope ?? [])[0] ?? "none",
+          preserveViolations: [],
+          boundaryViolations: [],
+          unrelatedFindings: [],
+        },
+      },
+    ],
+  });
+
+  assert.deepEqual(ground.owningArtifacts, ["world_bible", "beat_sheet"]);
+  // The correction belongs in the beat sheet; the world bible is the rule being violated and is in
+  // this case's preserve set. Both are legitimate routings and neither may be scored as a failure.
+  assert.equal(scoreResultObject(entry.case, withOwners(["beat_sheet"])).status, "PASS");
+  assert.equal(scoreResultObject(entry.case, withOwners(["world_bible"])).status, "PASS");
+  assert.equal(scoreResultObject(entry.case, withOwners(["BEAT_SHEET"])).status, "PASS");
+  assert.equal(scoreResultObject(entry.case, withOwners(["story_concept"])).status, "FAIL");
+  assert.equal(scoreResultObject(entry.case, withOwners([])).status, "FAIL");
+});
+
+test("a malformed hardGateFailures value throws rather than scoring as no failures", async () => {
+  const entry = await caseEntry("prod-level-1-tomorrows-receipt");
+  const dimensions = Object.fromEntries((entry.case.requiredDimensions ?? []).map((id) => [id, 3]));
+  const withFailures = (hardGateFailures: unknown): unknown => ({
+    caseId: entry.case.id,
+    repeats: [{ repeat: 1, dimensions, hardGateFailures }],
+  });
+
+  assert.equal(scoreResultObject(entry.case, withFailures([])).status, "PASS");
+  assert.equal(scoreResultObject(entry.case, withFailures(["continuity"])).status, "FAIL");
+  // A hand-authored result that writes the field as a bare string must not publish a false green.
+  for (const malformed of ["continuity", { continuity: true }, [1], null]) {
+    assert.throws(() => scoreResultObject(entry.case, withFailures(malformed)), /hardGateFailures/);
+  }
 });
 
 test("diagnostic scorer inverts detection for a clean control", async () => {

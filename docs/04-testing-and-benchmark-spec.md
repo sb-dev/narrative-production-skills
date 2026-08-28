@@ -564,9 +564,14 @@ weak scene
 
 A prose rewrite fails routing when the root cause is structural.
 
-A case's `owningArtifacts` ground truth is **ordered**: the first entry is the root cause and the
-rest are the artifacts it propagates into. Routing is scored against the first entry, so naming only
-a downstream artifact does not pass.
+A case's `owningArtifacts` ground truth is the **set** of artifacts a correct routing may name, not
+an ordered root-cause-first list. For several defects it deliberately contains both the
+authoritative artifact that must not change and the artifact the correction belongs to — a world
+rule violated by a beat lists `world_bible` and `beat_sheet`; a knowledge leak lists
+`continuity_record` and `narrative_draft`. Routing passes when the diagnosis names any of them.
+
+Identifier comparisons for `defectClasses` and `owningArtifacts` are normalised (trimmed and case
+folded), so casing is not scored as a routing error.
 
 #### Scope
 
