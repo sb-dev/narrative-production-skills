@@ -8,6 +8,7 @@ export const expectedSkills = [
   "narrative-continuity",
   "narrative-evaluate",
   "narrative-revise",
+  "narrative-pack-create",
 ] as const;
 
 export interface ValidationResult {

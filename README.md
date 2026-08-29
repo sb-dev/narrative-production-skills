@@ -1,7 +1,5 @@
 # Narrative Production Skills
 
-![Video Production Skills](hero.png)
-
 **Develop complete AI-assisted narratives, not isolated text generations.**
 
 Narrative Production Skills gives AI coding agents a production workflow for turning a brief into a coherent short story, manuscript, screenplay, or reusable story package.
@@ -87,45 +85,46 @@ npx skills update
 npx skills generate-lock
 ```
 
-## Quick start — The Unscheduled Train
+## Quick start — Tomorrow's Receipt
 
 Start with one short story and learn the complete narrative-production loop.
 
 ```text
-Use Narrative Production Skills to develop a 2,000-word speculative short story.
+Use Narrative Production Skills to develop a 2,000-word speculative short story titled “Tomorrow's Receipt”.
 
 Premise:
-A night-shift railway dispatcher sees a train identifier moving across the network that exists nowhere in the timetable.
+Closing a small corner shop, cashier Lena Rahman finds that the till has printed one extra receipt dated tomorrow. The purchases are ordinary, but together they suggest that one of her regular customers, Mr Kavanagh, will need urgent help before midnight the next day.
 
 Requirements:
-- Genre: speculative mystery
-- Tone: restrained, tense, grounded
-- Point of view: close third person
-- Setting: one night in a regional rail control room
+- Genre: speculative human drama
+- Tone: intimate, restrained, quietly tense
+- Point of view: close third person through Lena
+- Setting: the shop, the surrounding street, and one nearby flat
 - Length: about 2,000 words
-- The supernatural element should remain ambiguous until late in the story
-- Avoid exposition-heavy world building
+- Keep the speculative mechanism unexplained
+- Do not turn the story into a large conspiracy or time-travel mythology
+- The final consequence should arise from Lena's choice, not from a twist imposed from outside
+- Avoid sentimental exposition
 
 Workflow:
 - Explore three genuinely different story concepts at low resolution
 - Compare them and select one direction
-- Develop only the character and world information the story actually needs
-- Produce a compact complete outline
-- Break the story into beats and scene cards where useful
-- Draft the story from the approved development artifacts
+- Develop only the character and world information the selected story needs
+- Produce a compact complete outline before drafting prose
+- Draft from the selected development artifacts
 - Evaluate the draft without rewriting it
 - Create a revision plan from the findings
 - Revise the smallest sufficient scope
-- Preserve unaffected approved decisions
+- Preserve unaffected selected or approved decisions
 
-Optimise for:
+What to optimise for:
 - causal coherence
-- protagonist motivation
-- escalating tension
+- emotional credibility
+- a clear protagonist choice
+- escalating significance of the receipt items
+- economical setup and payoff
 - scene purpose
-- continuity
-- setup and payoff
-- a satisfying but non-expository ending
+- a satisfying ending without explaining the phenomenon
 ```
 
 A first project should stay small. For example:
@@ -154,109 +153,73 @@ low-resolution exploration
 → revise only affected material
 ```
 
+See [Tomorrow's Receipt](examples/level-1-tomorrows-receipt/README.md).
+
 ## Learn by producing
 
-Progress through increasingly demanding narrative productions. Each level adds a real story-production problem rather than another abstraction.
+Progress through increasingly demanding narrative-production problems. **Each level contains three productions from different genres or audience modes**, so the capability is demonstrated as a reusable production behaviour rather than a thriller-specific trick.
 
-### Level 1 — Develop and revise one story
+### Level 1 — Develop and revise one complete story
 
-**Short story**
+Prove the complete narrative-production loop on compact short fiction across very different tones before continuity infrastructure or cross-domain handoffs are needed.
 
-[01 — Short Story](examples/01-short-story/README.md)
-
-A night-shift railway dispatcher sees a train identifier that exists nowhere in the timetable.
-
-Learn:
+- **[Tomorrow's Receipt](examples/level-1-tomorrows-receipt/README.md)** — speculative human drama. Closing a corner shop, a cashier's till prints tomorrow's final receipt. The listed purchases suggest that one of her regular customers will need help before midnight.
+- **[Wrong Number, Right Song](examples/level-1-wrong-number-right-song/README.md)** — romantic comedy. A struggling songwriter receives a voice note meant for someone else after a disastrous blind date, and a polite correction turns into an unexpectedly honest conversation over one evening.
+- **[The Birthday Weather Machine](examples/level-1-the-birthday-weather-machine/README.md)** — family science-fiction comedy. An eleven-year-old inventor tries to save her little brother's outdoor birthday from rain and discovers that controlling one tiny patch of weather is harder than building the machine.
 
 ```text
-brief
-→ concepts
-→ selected concept
-→ outline
-→ rough scene
-→ editorial report
-→ revision plan
-→ revised scene
+brief → concept alternatives → selection → outline → draft → evaluation → revision plan → targeted revision
 ```
 
-The goal is to prove the complete production loop without introducing continuity infrastructure before it is needed.
+### Level 2 — Maintain knowledge, belief and canon
 
-### Level 2 — Maintain knowledge and continuity
+Add explicit continuity because relationships, promises, identity and evidence now depend on who knows, believes, conceals or misinterprets what.
 
-**Mystery with conflicting beliefs**
+- **[Wedding Table Nine](examples/level-2-wedding-table-nine/README.md)** — ensemble comedy / farce. A last-minute seating reshuffle puts six wedding guests together whose relationships, secrets and assumptions are known differently by everyone at the table.
+- **[The Dragon's Three Promises](examples/level-2-the-dragons-three-promises/README.md)** — fantasy. A dragon has separately made three binding promises to three people, and a single midsummer festival makes it impossible to honour all three literally.
+- **[The Duplicate Astronaut](examples/level-2-the-duplicate-astronaut/README.md)** — science fiction / identity story. Two astronauts return from the same one-person mission with identical memories up to a short communications blackout, and both sincerely believe they are the original.
 
-[02 — Mystery Continuity](examples/02-mystery-continuity/README.md)
+```text
+objective state + beliefs + secrets + uncertainty → task context → scenes → continuity evaluation → local correction
+```
 
-Three witnesses remember the same museum theft differently, and one of them is telling the truth for the wrong reason.
+### Level 3 — Develop and execute a screenplay
 
-Adds:
+Translate medium-independent story decisions into scene cards and Fountain-compatible screenplay pages across comedy, romance and action while keeping audiovisual direction downstream.
 
-- character beliefs and knowledge state;
-- secrets and uncertainty;
-- planned versus canonical facts;
-- continuity-aware context selection;
-- revision without leaking information between characters.
+- **[Returns Desk](examples/level-3-returns-desk/README.md)** — workplace fantasy comedy. A department-store returns clerk is asked to refund a dragon egg, but every normal policy choice creates a new practical problem as the egg begins to hatch.
+- **[Table for Two](examples/level-3-table-for-two/README.md)** — romantic comedy. Two people at neighbouring restaurant tables realise their blind dates have been accidentally swapped, but neither wants to interrupt the unexpectedly better conversation.
+- **[The Princess's Day Off](examples/level-3-the-princess-day-off/README.md)** — fantasy adventure comedy. A royal bodyguard discovers the princess has slipped into a festival in disguise just as a ceremonial procession makes returning unseen almost impossible.
 
-Continuity appears because the story now needs it, not because every project starts with a story database.
-
-### Level 3 — Write a screenplay
-
-**Screenplay development**
-
-[03 — Screenplay](examples/03-screenplay/README.md)
-
-A housing officer must interview the tenant of a flat that city records insist has never existed.
-
-Adds:
-
-- scene-card planning;
-- screenplay-specific execution;
-- Fountain where useful;
-- developmental screenplay evaluation;
-- targeted scene revision.
-
-The story model remains medium-independent while screenplay execution stays format-specific.
+```text
+story intent → scene cards → screenplay → developmental evaluation → bounded screenplay revision
+```
 
 ### Level 4 — Manage an episodic story
 
-**Multi-episode narrative**
+Prove repeatable episode engines, persistent ensembles, planned-versus-canonical separation and growing continuity across contrasting series genres.
 
-[04 — Episodic Story](examples/04-episodic-story/README.md)
-
-Each episode follows a different emergency call routed through the same impossible switchboard, while one operator slowly realises the calls come from future disasters.
-
-Adds:
-
-- persistent character arcs;
-- episode-level story movement;
-- larger continuity state;
-- setup and payoff across episodes;
-- progressive evaluation rather than waiting for the whole series to be drafted.
-
-### Level 5 — Hand the story to film production
-
-**Cross-domain production**
-
-[05 — Film Handoff](examples/05-film-handoff/README.md)
-
-Learn artifact-based composition between creative-production domains:
+- **[Department of Minor Miracles](examples/level-4-department-of-minor-miracles/README.md)** — workplace fantasy comedy. A municipal office investigates small supernatural inconveniences that are too trivial for emergency services but too impossible for ordinary departments.
+- **[Second Chance Café](examples/level-4-second-chance-cafe/README.md)** — romantic ensemble series. Each episode follows a customer using a neighbourhood café to attempt one second chance, while the staff's own relationships change across the season.
+- **[Local Legends Club](examples/level-4-local-legends-club/README.md)** — children's adventure / mystery. Four children investigate one neighbourhood legend per episode and gradually discover that the supposedly unrelated stories describe the same hidden route through their town.
 
 ```text
-Narrative Production Skills
-→ story brief
-→ character profile
-→ world bible
-→ screenplay
-→ scene plan
-        ↓
-Video Production Skills
-        ↓
-optional Music Production Skills
+series engine → episode stories → evolving character state → continuity → progressive evaluation
 ```
 
-Narrative owns story intent and constraints. Video owns visual character design, storyboards, cinematography, shots and assembly. Music owns music production.
+### Level 5 — Prepare a narrative handoff for audiovisual production
 
-No shared runtime API is required.
+Prove artifact-based composition with downstream Video, Animation and Music Production Skills while preserving the boundary between story decisions and production decisions.
+
+- **[The Orchestra in the Walls](examples/level-5-the-orchestra-in-the-walls/README.md)** — magical realism / music-driven drama. A lonely tenant hears one isolated instrument through each wall of her flat and gradually realises the separate fragments form one unfinished composition.
+- **[Paper Moon Parade](examples/level-5-paper-moon-parade/README.md)** — family fantasy / animated short. A child's folded paper animals come alive and lead her across the city to find the elderly neighbour who taught her how to make them.
+- **[The Day Gravity Blinked](examples/level-5-the-day-gravity-blinked/README.md)** — science-fiction comedy. Gravity disappears for exactly three seconds every hour while a baker tries to deliver an elaborate wedding cake across town before the next scheduled blink.
+
+```text
+narrative package → story constraints / screenplay / scene plans → downstream audiovisual and music production
+```
+
+The examples are intentionally genre-diverse. A continuity system that only works for mysteries, or a screenplay workflow that only produces tense two-handers, has not demonstrated general narrative-production capability.
 
 ## Project structure grows with the story
 
@@ -351,6 +314,40 @@ The governing rule is:
 
 > **Correct the highest upstream cause of the failure, but regenerate only downstream material actually affected.**
 
+### `narrative-pack-create`
+
+Create or revise self-contained Narrative Production extension packs.
+
+Use it when a reusable medium, genre, style, audience, voice-cast, evaluation or handoff profile should become an installable Agent Skill rather than remain project-specific prompting. Every created pack must include a realistic showcase example with the exact generation prompt.
+
+This is an **extension-authoring skill**, not a sixth core narrative-production capability.
+
+## Extension packs
+
+Customisation packs specialise the core workflow without replacing it:
+
+```text
+Narrative Production Skills
+        +
+medium + genre + style + audience + optional voice cast
+        ↓
+coherent production profile
+```
+
+The initial catalogue spans literary, screenplay, graphic, stage, audio, film/television and interactive narrative. See [Extension Pack Catalogue](docs/06-extension-pack-catalogue.md).
+
+Each catalogue example has a copyable generation prompt under [`examples/extension-packs/`](examples/extension-packs/).
+
+Install the authoring skill when creating or revising packs:
+
+```bash
+npx skills add <org>/<repo> \
+  --skill narrative-pack-create \
+  --agent claude-code
+```
+
+For Codex, use `--agent codex`.
+
 ## Execution
 
 The skills decide **what narrative-production work is needed**. The host AI agent performs language generation and reasoning.
@@ -371,31 +368,41 @@ The project does not require an MCP server, vector database, graph database, mod
 
 ## Testing and benchmarks
 
-Repository checks and narrative-quality evaluation are deliberately separate.
+Repository correctness and narrative quality are measured separately.
 
-Current scaffold checks:
+The executable benchmark currently contains **42 cases**:
 
-```bash
-pnpm install
-pnpm run check
-pnpm run validate
-pnpm test
-pnpm run smoke:install
+```text
+10 diagnostic cases
+15 progressive production cases
+12 extension-pack showcase cases
+ 5 extension-pack authoring cases
 ```
 
-The testing specification defines additional contract, eval and benchmark layers for behaviours such as:
+Deterministic validation:
 
-- approved-decision preservation;
-- rejected-candidate leakage;
-- planned versus canonical state;
-- character knowledge and secrets;
-- world-rule violations;
-- structural root-cause diagnosis;
-- smallest sufficient revision scope;
-- evaluation versus rewriting;
-- screenplay/visual-production boundaries.
+```bash
+npm install
+npm run check
+npm run validate
+npm test
+npm run test:benchmark
+```
 
-Semantic benchmark collection is opt-in and separate from deterministic CI. No benchmark result should be reported until it has actually been measured.
+Inspect the benchmark:
+
+```bash
+npm run benchmark:list
+
+# after npm run build
+node dist/tools/run-benchmark.js --case prod-level-1-tomorrows-receipt
+```
+
+The benchmark measures defect detection, root-cause routing, revision scope, preservation, narrative quality, medium/genre/style adherence, optional voice-cast handling, cross-domain boundaries, and extension-pack authoring.
+
+Semantic quality uses repeated, anchored per-dimension judgement rather than one authoritative story score. No production baseline is reported until real outputs have actually been measured.
+
+See [Testing and Benchmark Specification](docs/04-testing-and-benchmark-spec.md) and [benchmarks/README.md](benchmarks/README.md).
 
 ## Documentation
 
@@ -421,9 +428,9 @@ Semantic benchmark collection is opt-in and separate from deterministic CI. No b
   - [Repository Structure](docs/03-creative-skills-repository-and-contracts-spec.md#2-repository-structure)
   - [Skill Packaging Rule](docs/03-creative-skills-repository-and-contracts-spec.md#3-skill-packaging-rule)
   - [Skill Evals](docs/03-creative-skills-repository-and-contracts-spec.md#16-skill-evals)
-  - [End-to-End Evals](docs/03-creative-skills-repository-and-contracts-spec.md#23-end-to-end-evals)
-  - [Consumer Project Structure and Progressive Examples](docs/03-creative-skills-repository-and-contracts-spec.md#25-consumer-project-structure-and-progressive-examples)
-  - [Canonical Installation Mechanism](docs/03-creative-skills-repository-and-contracts-spec.md#29-canonical-installation-mechanism)
+  - [End-to-End Evals](docs/03-creative-skills-repository-and-contracts-spec.md#24-end-to-end-evals)
+  - [Consumer Project Structure and Progressive Examples](docs/03-creative-skills-repository-and-contracts-spec.md#26-consumer-project-structure-and-progressive-examples)
+  - [Canonical Installation Mechanism](docs/03-creative-skills-repository-and-contracts-spec.md#30-canonical-installation-mechanism)
 - [Testing and Benchmark Specification](docs/04-testing-and-benchmark-spec.md)
   - [Testing Layers](docs/04-testing-and-benchmark-spec.md#2-testing-layers)
   - [Defect Taxonomy](docs/04-testing-and-benchmark-spec.md#4-defect-taxonomy)
@@ -432,6 +439,21 @@ Semantic benchmark collection is opt-in and separate from deterministic CI. No b
   - [Semantic Benchmark](docs/04-testing-and-benchmark-spec.md#7-semantic-benchmark)
   - [Initial Benchmark Cases](docs/04-testing-and-benchmark-spec.md#8-initial-benchmark-cases)
   - [Known Blind Spots Before the First Baseline](docs/04-testing-and-benchmark-spec.md#14-known-blind-spots-before-the-first-baseline)
+- [Narrative Production Customisation Packs Specification](docs/05-customisation-packs-spec.md)
+  - [Core Model](docs/05-customisation-packs-spec.md#4-core-model)
+  - [Pack Dimensions](docs/05-customisation-packs-spec.md#5-pack-dimensions)
+  - [Production Profile](docs/05-customisation-packs-spec.md#6-production-profile)
+  - [Integration with Core Narrative Skills](docs/05-customisation-packs-spec.md#8-integration-with-core-narrative-skills)
+  - [Cross-Project Handoffs by Medium](docs/05-customisation-packs-spec.md#9-cross-project-handoffs-by-medium)
+  - [Agent Skills Packaging](docs/05-customisation-packs-spec.md#11-agent-skills-packaging)
+  - [Example Packs](docs/05-customisation-packs-spec.md#12-example-packs)
+  - [Deferred Extensions](docs/05-customisation-packs-spec.md#17-deferred-extensions)
+- [Extension Pack Catalogue](docs/06-extension-pack-catalogue.md)
+  - [Catalogue Rules](docs/06-extension-pack-catalogue.md#2-catalogue-rules)
+  - [Initial Catalogue](docs/06-extension-pack-catalogue.md#3-initial-catalogue)
+  - [Pack Creation Skill](docs/06-extension-pack-catalogue.md#16-pack-creation-skill)
+  - [Required Pack Output](docs/06-extension-pack-catalogue.md#17-required-pack-output)
+  - [Catalogue Acceptance Criteria](docs/06-extension-pack-catalogue.md#18-catalogue-acceptance-criteria)
 
 ### Project-family evolution
 

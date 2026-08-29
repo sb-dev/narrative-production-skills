@@ -13,6 +13,7 @@ It owns:
 - assets;
 - optional scripts;
 - evals;
+- testing and benchmark layout;
 - host/tool requirements;
 - installation expectations;
 - examples;
@@ -43,19 +44,40 @@ narrative-production-skills/
 │   ├── validate-skills.ts
 │   └── smoke-install.ts
 │
+├── tools/
+│   ├── run-benchmark.ts
+│   └── run-command-evals.ts
+│
 ├── tests/
-│   └── validate-skills.test.ts
+│   ├── validate-skills.test.ts
+│   ├── command-contracts.test.ts
+│   └── benchmark.test.ts
+│
+├── benchmarks/
+│   ├── manifest.json
+│   ├── README.md
+│   ├── rubrics/
+│   ├── cases/
+│   │   ├── diagnostic/
+│   │   ├── production/
+│   │   ├── packs/
+│   │   └── pack-authoring/
+│   └── fixtures/
 │
 ├── docs/
 │   ├── 01-creative-skills-system-spec.md
 │   ├── 02-creative-skills-workflows-and-artifacts-spec.md
 │   ├── 03-creative-skills-repository-and-contracts-spec.md
 │   ├── 04-testing-and-benchmark-spec.md
+│   ├── 05-customisation-packs-spec.md
+│   ├── 06-extension-pack-catalogue.md
 │   └── extraction-candidates.md
 │
 ├── skills/
 │   ├── narrative-develop/
 │   │   ├── SKILL.md
+│   │   ├── commands/
+│   │   │   └── ...
 │   │   ├── references/
 │   │   │   ├── artifacts.md
 │   │   │   ├── story-development.md
@@ -68,10 +90,14 @@ narrative-production-skills/
 │   │   │   ├── narrative-brief.example.yaml
 │   │   │   └── story-outline.example.yaml
 │   │   └── evals/
-│   │       └── evals.json
+│   │       ├── evals.json
+│   │       └── commands/
+│   │           └── ...
 │   │
 │   ├── narrative-write/
 │   │   ├── SKILL.md
+│   │   ├── commands/
+│   │   │   └── ...
 │   │   ├── references/
 │   │   │   ├── artifacts.md
 │   │   │   ├── prose.md
@@ -79,10 +105,14 @@ narrative-production-skills/
 │   │   │   ├── scene-writing.md
 │   │   │   └── discovery-writing.md
 │   │   └── evals/
-│   │       └── evals.json
+│   │       ├── evals.json
+│   │       └── commands/
+│   │           └── ...
 │   │
 │   ├── narrative-continuity/
 │   │   ├── SKILL.md
+│   │   ├── commands/
+│   │   │   └── ...
 │   │   ├── references/
 │   │   │   ├── artifacts.md
 │   │   │   ├── continuity.md
@@ -90,10 +120,14 @@ narrative-production-skills/
 │   │   ├── assets/
 │   │   │   └── continuity-record.example.yaml
 │   │   └── evals/
-│   │       └── evals.json
+│   │       ├── evals.json
+│   │       └── commands/
+│   │           └── ...
 │   │
 │   ├── narrative-evaluate/
 │   │   ├── SKILL.md
+│   │   ├── commands/
+│   │   │   └── ...
 │   │   ├── references/
 │   │   │   ├── artifacts.md
 │   │   │   ├── developmental-evaluation.md
@@ -102,25 +136,61 @@ narrative-production-skills/
 │   │   ├── assets/
 │   │   │   └── editorial-report.example.yaml
 │   │   └── evals/
-│   │       └── evals.json
+│   │       ├── evals.json
+│   │       └── commands/
+│   │           └── ...
 │   │
-│   └── narrative-revise/
+│   ├── narrative-revise/
+│   │   ├── SKILL.md
+│   │   ├── commands/
+│   │   │   └── ...
+│   │   ├── references/
+│   │   │   ├── artifacts.md
+│   │   │   ├── revision.md
+│   │   │   └── impact-analysis.md
+│   │   ├── assets/
+│   │   │   └── revision-plan.example.yaml
+│   │   └── evals/
+│   │       ├── evals.json
+│   │       └── commands/
+│   │           └── ...
+│   │
+│   └── narrative-pack-create/
 │       ├── SKILL.md
+│       ├── commands/
+│       │   └── ...
 │       ├── references/
 │       │   ├── artifacts.md
-│       │   ├── revision.md
-│       │   └── impact-analysis.md
+│       │   ├── pack-contract.md
+│       │   ├── authoring-workflow.md
+│       │   ├── evaluation.md
+│       │   └── voice-casting.md
 │       ├── assets/
-│       │   └── revision-plan.example.yaml
+│       │   ├── SKILL.template.md
+│       │   ├── production-profile.template.md
+│       │   └── example-README.template.md
 │       └── evals/
-│           └── evals.json
+│           ├── evals.json
+│           └── commands/
+│               └── ...
 │
 ├── examples/
-│   ├── 01-short-story/
-│   ├── 02-mystery-continuity/
-│   ├── 03-screenplay/
-│   ├── 04-episodic-story/
-│   └── 05-film-handoff/
+│   ├── level-1-tomorrows-receipt/
+│   ├── level-1-wrong-number-right-song/
+│   ├── level-1-the-birthday-weather-machine/
+│   ├── level-2-wedding-table-nine/
+│   ├── level-2-the-dragons-three-promises/
+│   ├── level-2-the-duplicate-astronaut/
+│   ├── level-3-returns-desk/
+│   ├── level-3-table-for-two/
+│   ├── level-3-the-princess-day-off/
+│   ├── level-4-department-of-minor-miracles/
+│   ├── level-4-second-chance-cafe/
+│   ├── level-4-local-legends-club/
+│   ├── level-5-the-orchestra-in-the-walls/
+│   ├── level-5-paper-moon-parade/
+│   ├── level-5-the-day-gravity-blinked/
+│   └── extension-packs/
 │
 ├── evals/
 │   └── end-to-end/
@@ -152,6 +222,7 @@ Runtime resources required by that skill must live with it:
 
 ```text
 SKILL.md
+commands/  # when the skill is decomposed into commands
 references/
 assets/
 scripts/   # only when actually needed
@@ -162,6 +233,43 @@ An installed skill must not depend on repository-level `docs/`, `examples/`, or 
 Selective installation is a supported use case.
 
 If two skills temporarily duplicate a small reference, prefer local duplication until a stable shared contract and installation mechanism is justified.
+
+
+### 3.1 Command Packaging Rule
+
+Commands are private implementation contracts of their owning skill.
+
+They live inside:
+
+```text
+skills/<skill-name>/commands/<command>.md
+```
+
+They are installed automatically with the skill because they are part of that skill's runtime resources.
+
+Commands:
+
+- are **not** independently installable Agent Skills;
+- do not require Agent Skills frontmatter;
+- must not depend on repository-level `/docs`;
+- may read the owning skill's local `references/` and `assets/`;
+- may not read another skill's private command/reference files unless an explicit peer-skill dependency exists;
+- must preserve the owning skill's lifecycle, artifact, continuity, precedence, and boundary contracts;
+- should represent one operation that can be meaningfully executed and evaluated independently.
+
+Do not create a command merely to mirror every heading in `SKILL.md`.
+
+A command is justified when separating it improves at least one of:
+
+```text
+independent testability
+failure localisation
+reuse inside the owning skill
+entry at an already-resolved workflow stage
+clear input/output contract
+```
+
+The repository must not introduce a command dispatcher, command registry service, workflow engine, or command-specific runtime. The host agent reads and follows the selected local command contract.
 
 ---
 
@@ -305,6 +413,130 @@ Each `SKILL.md` should contain:
 Detailed production knowledge belongs in `references/`.
 
 `SKILL.md` should remain concise enough to guide activation and execution without becoming the project's complete narrative craft manual.
+
+
+### 7.1 Command Contract
+
+Every command Markdown file uses the same small contract:
+
+```markdown
+# <logical-command-name>
+
+## Purpose
+
+## Inputs
+
+## Reads
+
+## Produces
+
+## Must
+
+## Must Not
+
+## Completion
+```
+
+`Reads` lists only context/artifacts required for the operation. `Produces` names the artifact or state change, or states that the command is diagnostic-only.
+
+`Must` contains observable production behaviour. `Must Not` contains boundaries and preservation constraints. `Completion` defines what must be true before control returns to the owning skill.
+
+Commands must use logical names in documentation and eval output, for example:
+
+```text
+develop:concept
+continuity:check
+revise:plan
+```
+
+The file name may remain concise:
+
+```text
+commands/concept.md
+commands/check.md
+commands/plan.md
+```
+
+### 7.2 Initial Command Catalogue
+
+```text
+narrative-develop/commands/
+├── concept.md       # develop:concept
+├── character.md     # develop:character
+├── world.md         # develop:world
+├── outline.md       # develop:outline
+├── beats.md         # develop:beats
+├── scene-plan.md    # develop:scene-plan
+└── select.md        # develop:select
+
+narrative-write/commands/
+├── rough-scene.md   # write:rough-scene
+├── refine-scene.md  # write:refine-scene
+├── prose.md         # write:prose
+├── screenplay.md    # write:screenplay
+└── discovery.md     # write:discovery
+
+narrative-continuity/commands/
+├── check.md         # continuity:check
+├── update.md        # continuity:update
+├── context.md       # continuity:context
+└── impact.md        # continuity:impact
+
+narrative-evaluate/commands/
+├── artifact.md      # evaluate:artifact
+├── scene.md         # evaluate:scene
+├── draft.md         # evaluate:draft
+└── readiness.md     # evaluate:readiness
+
+narrative-revise/commands/
+├── diagnose.md      # revise:diagnose
+├── plan.md          # revise:plan
+├── apply.md         # revise:apply
+└── verify.md        # revise:verify
+
+narrative-pack-create/commands/
+├── inspect.md       # pack:inspect
+├── create.md        # pack:create
+├── example.md       # pack:example
+├── evals.md         # pack:evals
+└── validate.md      # pack:validate
+```
+
+This is **29 commands across six installable skills**. The count is not a goal. Merge, remove, or add commands when implementation evidence shows that a boundary is wrong.
+
+### 7.3 Skill Orchestration Contract
+
+`SKILL.md` remains the orchestrator and public interface.
+
+It must:
+
+1. determine the requested production outcome;
+2. determine whether a command can be entered directly or a sequence is required;
+3. load only the command contracts relevant to the current work;
+4. preserve approved decisions and current lifecycle state across command boundaries;
+5. avoid replaying already-completed commands without cause;
+6. surface upstream conflicts instead of hiding them downstream.
+
+Example:
+
+```text
+request: apply this existing approved revision plan
+
+narrative-revise
+→ revise:apply
+→ revise:verify
+```
+
+Incorrect:
+
+```text
+→ revise:diagnose
+→ revise:plan
+→ revise:apply
+→ revise:verify
+```
+
+when diagnosis and planning are already approved inputs.
 
 ---
 
@@ -1182,6 +1414,42 @@ After revision verify:
 
 ---
 
+# 12A. `narrative-pack-create/SKILL.md`
+
+`narrative-pack-create` is an extension-authoring skill, not a sixth core narrative-production capability.
+
+Its complete runtime contract is implemented in `skills/narrative-pack-create/SKILL.md`. It must:
+
+- inspect the existing extension-pack catalogue before creating a new pack;
+- distinguish reusable production profiles from project-specific prompting;
+- define medium, genre, operational style, audience when relevant, and optional voice casting;
+- separate hard medium constraints from soft genre/style defaults;
+- preserve explicit project instructions and approved narrative decisions;
+- define pack-aware evaluation and bounded revision behaviour;
+- preserve Narrative Production project boundaries in downstream handoffs;
+- create a self-contained Agent Skill package;
+- create at least one showcase `README.md` containing the exact generation prompt;
+- create behavioural evals;
+- avoid creator-name imitation, unlicensed voice assets, credentials, and unnecessary provider logic.
+
+Minimum output:
+
+```text
+skills/<pack-name>/
+├── SKILL.md
+├── references/
+│   └── production-profile.md
+└── evals/
+    └── evals.json
+
+examples/extension-packs/<pack-name>/
+└── README.md
+```
+
+Add only resources the pack genuinely needs.
+
+---
+
 ## 13. References
 
 Each skill's `references/` directory contains detailed production knowledge needed at runtime but too large or specialised for `SKILL.md`.
@@ -1235,6 +1503,16 @@ revision.md
 impact-analysis.md
 ```
 
+### `narrative-pack-create`
+
+```text
+artifacts.md
+pack-contract.md
+authoring-workflow.md
+evaluation.md
+voice-casting.md
+```
+
 Runtime references must remain local to the installed skill.
 
 Each skill-local `artifacts.md` contains only the artifact semantics that skill must consume or produce. Small contract fragments may be duplicated between skills so selective installation remains self-contained.
@@ -1272,6 +1550,14 @@ editorial-report.example.yaml
 
 ```text
 revision-plan.example.yaml
+```
+
+### `narrative-pack-create`
+
+```text
+SKILL.template.md
+production-profile.template.md
+example-README.template.md
 ```
 
 Do not create template files merely to mirror every artifact.
@@ -1615,9 +1901,70 @@ Verify:
 
 If fixing a scene requires changing an approved premise, the skill must report and explicitly reopen that dependency rather than silently changing it.
 
+
+## 22. Command and Orchestration Evals
+
+### 22.1 Command-Level Evals
+
+Every command must have command-local evals under:
+
+```text
+skills/<skill-name>/evals/commands/<command>.json
+```
+
+Minimum coverage per command:
+
+```text
+normal case
++
+boundary / must-not case
+```
+
+Add refinement, failure, or regression cases when the command owns behaviour that requires them.
+
+Command evals test the command contract directly rather than asking whether the whole skill produced a generally good result.
+
+Examples:
+
+```text
+develop:select
+→ compares supplied candidates
+→ selects or recommends one using the brief
+→ preserves rejected candidates as rejected
+→ does not silently approve the selection
+
+continuity:context
+→ includes task-relevant canonical facts and character knowledge
+→ excludes irrelevant lore
+→ does not promote planned material to canon
+
+revise:plan
+→ identifies root cause
+→ selects smallest sufficient scope
+→ names preserve set
+→ does not rewrite narrative
+```
+
+The initial 29-command catalogue therefore requires at least **58 command eval cases** before regression additions.
+
+### 22.2 Skill-Orchestration Evals
+
+Skill-level evals must test more than individual command correctness.
+
+They verify that `SKILL.md`:
+
+- selects the correct command or command sequence;
+- skips already-completed steps when valid inputs exist;
+- passes required artifacts/state between commands;
+- preserves decisions across command boundaries;
+- stops or escalates when a command exposes an upstream conflict;
+- does not invoke unrelated commands merely because they exist.
+
+A command can pass while skill orchestration fails, and vice versa. Reports must keep those outcomes separate.
+
 ---
 
-## 22. Hard Cross-Skill Eval Gates
+## 23. Hard Cross-Skill Eval Gates
 
 Regardless of subjective story quality, the following are failures:
 
@@ -1638,7 +1985,7 @@ Regardless of subjective story quality, the following are failures:
 
 ---
 
-## 23. End-to-End Evals
+## 24. End-to-End Evals
 
 Repository-level evals should verify complete workflows.
 
@@ -1695,7 +2042,7 @@ Do not make long-form retrieval infrastructure a prerequisite for the initial ev
 
 ---
 
-## 24. Eval Fixtures
+## 25. Eval Fixtures
 
 Fixtures should encode deliberate narrative conditions.
 
@@ -1742,7 +2089,7 @@ Prefer fixtures that can test production invariants.
 
 ---
 
-## 25. Consumer Project Structure and Progressive Examples
+## 26. Consumer Project Structure and Progressive Examples
 
 Installed agent behaviour and creative artifacts must remain separate.
 
@@ -1782,101 +2129,42 @@ A screenplay or episodic project should then add only the structures it actually
 
 ### Progressive Examples
 
-Examples should teach materially increasing capability rather than isolated API-style demos.
-
-Initial progression:
+The repository contains fifteen progressive showcases: three deliberately genre-diverse productions at each of five capability levels.
 
 ```text
-examples/
-├── 01-short-story/
-├── 02-mystery-continuity/
-├── 03-screenplay/
-├── 04-episodic-story/
-└── 05-film-handoff/
+Level 1 — complete story loop
+├── Tomorrow's Receipt             — speculative human drama
+├── Wrong Number, Right Song       — romantic comedy
+└── The Birthday Weather Machine   — family science-fiction comedy
+
+Level 2 — continuity and information state
+├── Wedding Table Nine             — ensemble comedy / farce
+├── The Dragon's Three Promises    — fantasy
+└── The Duplicate Astronaut        — science fiction / identity story
+
+Level 3 — screenplay execution
+├── Returns Desk                    — workplace fantasy comedy
+├── Table for Two                   — romantic comedy
+└── The Princess's Day Off          — fantasy adventure comedy
+
+Level 4 — episodic / serial production
+├── Department of Minor Miracles   — workplace fantasy comedy
+├── Second Chance Café             — romantic ensemble
+└── Local Legends Club             — children's adventure / mystery
+
+Level 5 — cross-domain audiovisual handoff
+├── The Orchestra in the Walls     — magical realism / music-driven drama
+├── Paper Moon Parade              — family fantasy / animated short
+└── The Day Gravity Blinked         — science-fiction comedy
 ```
 
-#### `01-short-story`
+Every example directory contains its exact generation prompt in `README.md`.
 
-Proves one controlled end-to-end narrative:
-
-```text
-brief
-→ concept
-→ outline
-→ scene
-→ evaluate
-→ revise
-```
-
-#### `02-mystery-continuity`
-
-Adds:
-
-- multiple scenes;
-- character beliefs;
-- secrets;
-- planned versus canonical state;
-- continuity-aware writing.
-
-#### `03-screenplay`
-
-Adds:
-
-- scene cards;
-- screenplay execution;
-- Fountain where useful;
-- developmental evaluation;
-- targeted revision.
-
-#### `04-episodic-story`
-
-Adds:
-
-- multiple sequences/episodes;
-- evolving character arcs;
-- larger continuity state;
-- progressive evaluation.
-
-#### `05-film-handoff`
-
-Adds cross-domain composition:
-
-```text
-Narrative Production Skills
-→ screenplay / character / world / scene-plan artifacts
-→ downstream Video Production Skills
-→ optional Music Production Skills
-```
-
-The example should demonstrate artifact handoff without introducing shared runtime APIs.
-
-Examples must be creatively compelling enough to showcase the project.
-
-Where applicable preserve:
-
-```text
-brief
-draft alternatives
-selection
-character/world material
-outline
-beats
-scene cards
-draft narrative
-continuity
-evaluation
-revision plan
-revised output
-lineage
-```
-
-Candidate-selection and preserve-approved-work cases remain important, but they belong primarily in eval fixtures rather than occupying top-level showcase examples.
-
-Avoid examples that demonstrate only one generic text-generation call.
+Genre diversity is part of the example contract. The same capability level should remain successful when narrative pressure comes from humour, relationships, fantasy rules, ensemble knowledge, child agency, serial chemistry or cross-domain production rather than suspense alone.
 
 ---
 
-## 26. Extraction Candidate Register
+## 27. Extraction Candidate Register
 
 Maintain:
 
@@ -1934,7 +2222,7 @@ Reassess only after real implementations provide evidence of semantic equivalenc
 
 ---
 
-## 27. Upstream Reference and Adaptation Policy
+## 28. Upstream Reference and Adaptation Policy
 
 External projects may inform references and eval design.
 
@@ -1951,7 +2239,7 @@ Narrative Production Skills must remain coherent and domain-native.
 
 ---
 
-## 28. Open-Source Boundaries
+## 29. Open-Source Boundaries
 
 The repository is canonical for:
 
@@ -1976,7 +2264,7 @@ Do not let examples or blog content silently redefine normative skill behaviour.
 
 ---
 
-## 29. Canonical Installation Mechanism
+## 30. Canonical Installation Mechanism
 
 Use the open Agent Skills CLI.
 
@@ -2025,7 +2313,7 @@ npx skills add <org>/<repo> --global
 
 ---
 
-## 30. Why Project-Local Is the Default
+## 31. Why Project-Local Is the Default
 
 Narrative-production skills materially affect agent behaviour.
 
@@ -2041,7 +2329,7 @@ Global installation is appropriate only when a user deliberately wants these beh
 
 ---
 
-## 31. Installed Skill Tracking
+## 32. Installed Skill Tracking
 
 Useful Skills CLI commands:
 
@@ -2060,7 +2348,7 @@ Document explicit `npx skills add ...` recovery commands.
 
 ---
 
-## 32. Recommended Skill Combinations
+## 33. Recommended Skill Combinations
 
 ### Story Development
 
@@ -2101,7 +2389,7 @@ with optional Fountain tooling where useful.
 
 ---
 
-## 33. Local Installation Validation
+## 34. Local Installation Validation
 
 Before GitHub publication:
 
@@ -2153,17 +2441,19 @@ but do not advance the bootstrap stage until the required acceptance criterion h
 
 ---
 
-## 34. CI Expectations
+## 35. CI Expectations
 
 Minimum useful CI:
 
 ```text
 validate SKILL.md/frontmatter
+validate command files and command contracts
 validate expected files
-validate eval JSON
+validate skill and command eval JSON
 run strict TypeScript static checks
 run deterministic repository tests
 run cheap eval fixtures
+validate benchmark definitions and example/pack coverage
 test `npx skills add . --list`
 test local installation of each intended skill
 run installed-skill smoke tests from clean consumer workspaces
@@ -2176,7 +2466,7 @@ Any provider-backed or externally networked eval may run separately when it intr
 
 ---
 
-## 35. README Contract
+## 36. README Contract
 
 Benchmark the README against strong, relevant open-source Agent Skills and creative-production repositories before finalising it.
 
@@ -2235,12 +2525,12 @@ Also document:
 
 ---
 
-## 36. Technical Acceptance Criteria
+## 37. Technical Acceptance Criteria
 
 The repository contract is correct when:
 
 1. each skill has valid Agent Skills frontmatter;
-2. all five skills are independently discoverable;
+2. all five core skills and the `narrative-pack-create` extension-authoring skill are independently discoverable;
 3. each installed skill is self-contained;
 4. each skill carries the artifact semantics it needs in local references rather than depending on repository-level `/docs`;
 5. no mandatory text-model provider API is required;
@@ -2253,27 +2543,36 @@ The repository contract is correct when:
 12. context assembly is file/artifact-directed initially;
 13. `narrative-evaluate` diagnoses without silently rewriting;
 14. `narrative-revise` preserves approved work and targets the smallest sufficient scope;
-15. skill evals cover normal, draft, refine, final, and boundary cases;
+15. skill evals cover normal, draft, refine, final, and boundary cases, including `narrative-pack-create`;
 16. hard cross-skill preservation and canon invariants are tested;
 17. end-to-end evals cover selection, approval, continuity, evaluation, and targeted revision;
-18. Fountain is treated as an optional screenplay interchange format rather than a narrative model;
-19. deterministic skill-local tools remain limited to deterministic tasks;
-20. repository tooling is TypeScript with strict static checks, explicit runtime validation at external boundaries, safe subprocess invocation, and deterministic tests;
-21. examples demonstrate progressive production capability rather than disconnected text-generation calls;
-22. consumer-project guidance separates installed skills from `production/` artifacts and starts from the smallest useful workspace;
-23. optional directories are created only when real content exists;
-24. extraction candidates are tracked rather than prematurely shared;
-25. over-engineered follow-up infrastructure is not required by the initial repository;
-26. `npx skills add . --list` succeeds locally;
-27. each intended skill installs independently into a clean test project;
-28. installed-skill smoke tests execute from clean consumer workspaces;
-29. no installed skill breaks because it references repository-level private resources;
-30. README commands retain `<org>/<repo>` until exact public repository identity is verified;
-31. mandatory validation gates are never reported as passed while blocked.
+18. the benchmark covers all fifteen progressive examples and every current extension-pack showcase;
+19. Fountain is treated as an optional screenplay interchange format rather than a narrative model;
+20. deterministic skill-local tools remain limited to deterministic tasks;
+21. repository tooling is TypeScript with strict static checks, explicit runtime validation at external boundaries, safe subprocess invocation, and deterministic tests;
+22. examples demonstrate progressive production capability rather than disconnected text-generation calls;
+23. consumer-project guidance separates installed skills from `production/` artifacts and starts from the smallest useful workspace;
+24. optional directories are created only when real content exists;
+25. extraction candidates are tracked rather than prematurely shared;
+26. over-engineered follow-up infrastructure is not required by the initial repository;
+27. `npx skills add . --list` succeeds locally;
+28. each intended skill installs independently into a clean test project;
+29. installed-skill smoke tests execute from clean consumer workspaces;
+30. no installed skill breaks because it references repository-level private resources;
+31. README commands retain `<org>/<repo>` until exact public repository identity is verified;
+32. mandatory validation gates are never reported as passed while blocked;
+33. `narrative-pack-create` produces self-contained pack structures with a showcase README containing the exact generation prompt;
+34. extension-pack catalogue examples are definitions until their corresponding packs have been implemented and evaluated;
+35. commands are skill-local runtime resources rather than independently installable Agent Skills;
+36. the initial command catalogue covers the 29 specified operations unless implementation evidence justifies a documented change;
+37. every command implements the standard command contract;
+38. every command has at least one normal and one boundary command-level eval;
+39. skill-level evals verify command routing and orchestration independently from command correctness;
+40. installed skills contain their command files and command eval fixtures without repository-level runtime dependencies.
 
 ---
 
-## 37. Initial Repository Completion Gate
+## 38. Initial Repository Completion Gate
 
 Before publication:
 
@@ -2285,7 +2584,7 @@ Before publication:
 ✓ CONTRIBUTING.md exists
 ✓ CODE_OF_CONDUCT.md exists
 ✓ SECURITY.md exists
-✓ five skills are self-contained
+✓ five core skills and narrative-pack-create are self-contained
 ✓ skill evals exist
 ✓ at least one realistic, capability-led progressive example exists
 ✓ consumer-project structure is documented
@@ -2299,7 +2598,7 @@ Before publication:
 
 ---
 
-## 38. Publication Acceptance Gate
+## 39. Publication Acceptance Gate
 
 After publication:
 
@@ -2320,4 +2619,4 @@ Publication is incomplete until the external GitHub installation smoke test succ
 
 ---
 
-**Narrative Production Skills — Creative Skills Repository and Contracts Specification v3**
+**Narrative Production Skills — Creative Skills Repository and Contracts Specification v7**

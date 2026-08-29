@@ -1,0 +1,35 @@
+{
+  "id": "diag-world-rule-violation",
+  "suite": "diagnostic",
+  "capability": "world-rule-violation",
+  "skills": [
+    "narrative-develop"
+  ],
+  "rubric": "diagnostic",
+  "cleanControl": false,
+  "prompt": "World rule: the archive can replay a memory only once. Beat 7 requires the protagonist to replay the same memory a second time to discover the clue. Diagnose and route the problem.",
+  "groundTruth": {
+    "defectClasses": [
+      "world-rule-violation"
+    ],
+    "owningArtifacts": [
+      "world_bible",
+      "beat_sheet"
+    ],
+    "smallestSufficientScope": [
+      "beat-7 and affected descendants"
+    ],
+    "preserve": [
+      "one-use memory rule"
+    ],
+    "forbiddenChanges": []
+  },
+  "hardGates": [
+    "detection",
+    "evidence",
+    "routing",
+    "scope",
+    "preservation",
+    "boundary"
+  ]
+}

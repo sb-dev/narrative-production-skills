@@ -14,7 +14,8 @@ What approved behaviour, artifact contract, or installation behaviour must remai
 
 - [ ] Relevant skill evals updated
 - [ ] End-to-end eval updated where applicable
-- [ ] `npm run check`
-- [ ] `npm test`
-- [ ] `npm run validate`
+- [ ] `pnpm run check`
+- [ ] `pnpm test`
+- [ ] `pnpm run validate`
+- [ ] `pnpm run test:benchmark`
 - [ ] Clean-project install smoke test run when installation behaviour changed

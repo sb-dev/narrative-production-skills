@@ -1,0 +1,55 @@
+{
+  "id": "pack-authoring",
+  "scale": {
+    "min": 0,
+    "max": 3,
+    "anchors": {
+      "0": "contract failure",
+      "1": "incomplete/generic",
+      "2": "usable pack",
+      "3": "strong reusable production profile"
+    }
+  },
+  "dimensions": [
+    {
+      "id": "necessity",
+      "kind": "hard",
+      "description": "Checks the catalogue and does not create a new pack when project instructions or an existing pack suffice."
+    },
+    {
+      "id": "contract-completeness",
+      "kind": "hard",
+      "description": "Defines identity, dimensions, production effects, precedence, integration, evals and example."
+    },
+    {
+      "id": "operational-specificity",
+      "kind": "quality",
+      "description": "Turns medium/genre/style into actionable production behaviour rather than labels."
+    },
+    {
+      "id": "self-contained-packaging",
+      "kind": "hard",
+      "description": "The pack is independently installable and does not depend on repository-level private references."
+    },
+    {
+      "id": "showcase-prompt",
+      "kind": "hard",
+      "description": "Includes a realistic README example with an exact copyable generation prompt."
+    },
+    {
+      "id": "eval-coverage",
+      "kind": "hard",
+      "description": "Covers normal, draft, refinement, final and boundary behaviour."
+    },
+    {
+      "id": "voice-safety",
+      "kind": "hard-when-applicable",
+      "description": "Specific voices require authorised references; otherwise provide casting/performance guidance."
+    },
+    {
+      "id": "project-boundary",
+      "kind": "hard",
+      "description": "Does not expand Narrative into downstream visual/audio/game implementation."
+    }
+  ]
+}

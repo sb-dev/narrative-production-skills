@@ -1,0 +1,31 @@
+{
+  "id": "pack-intimate-literary-audiobook",
+  "suite": "packs",
+  "capability": "extension-pack-adherence",
+  "skills": [
+    "narrative-develop",
+    "narrative-write",
+    "narrative-evaluate",
+    "narrative-revise"
+  ],
+  "pack": "intimate-literary-audiobook",
+  "rubric": "pack-adherence",
+  "promptSource": "examples/extension-packs/intimate-literary-audiobook/README.md",
+  "requiredDimensions": [
+    "medium",
+    "genre",
+    "style",
+    "audience",
+    "voice-cast",
+    "pack-consistency",
+    "pack-aware-evaluation",
+    "handoff-boundary"
+  ],
+  "hardGates": [
+    "medium",
+    "pack-consistency",
+    "pack-aware-evaluation",
+    "handoff-boundary"
+  ],
+  "defaultRepeats": 3
+}

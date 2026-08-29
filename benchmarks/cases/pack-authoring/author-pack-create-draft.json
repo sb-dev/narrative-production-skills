@@ -1,0 +1,30 @@
+{
+  "id": "author-pack-create-draft",
+  "suite": "pack-authoring",
+  "capability": "draft",
+  "skills": [
+    "narrative-pack-create"
+  ],
+  "rubric": "pack-authoring",
+  "prompt": "Explore whether a slow-burn mystery novel need should become a new pack or reuse literary-mystery-novella.",
+  "expectedBehaviour": "Compares against the catalogue before scaffolding, keeps alternatives low resolution, and recommends project-specific instructions when a new reusable contract is not justified.",
+  "requiredDimensions": [
+    "necessity",
+    "contract-completeness",
+    "operational-specificity",
+    "self-contained-packaging",
+    "showcase-prompt",
+    "eval-coverage",
+    "voice-safety",
+    "project-boundary"
+  ],
+  "hardGates": [
+    "necessity",
+    "contract-completeness",
+    "self-contained-packaging",
+    "showcase-prompt",
+    "eval-coverage",
+    "project-boundary"
+  ],
+  "defaultRepeats": 3
+}

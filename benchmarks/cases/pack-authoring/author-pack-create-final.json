@@ -1,0 +1,30 @@
+{
+  "id": "author-pack-create-final",
+  "suite": "pack-authoring",
+  "capability": "final",
+  "skills": [
+    "narrative-pack-create"
+  ],
+  "rubric": "pack-authoring",
+  "prompt": "Prepare an interactive detective game narrative pack for release.",
+  "expectedBehaviour": "Checks self-contained packaging, production profile, precedence, state/continuity behaviour, showcase prompt, eval coverage and downstream implementation boundary.",
+  "requiredDimensions": [
+    "necessity",
+    "contract-completeness",
+    "operational-specificity",
+    "self-contained-packaging",
+    "showcase-prompt",
+    "eval-coverage",
+    "voice-safety",
+    "project-boundary"
+  ],
+  "hardGates": [
+    "necessity",
+    "contract-completeness",
+    "self-contained-packaging",
+    "showcase-prompt",
+    "eval-coverage",
+    "project-boundary"
+  ],
+  "defaultRepeats": 3
+}

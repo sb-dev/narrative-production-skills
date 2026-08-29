@@ -1,0 +1,30 @@
+{
+  "id": "diag-clean-control",
+  "suite": "diagnostic",
+  "capability": "clean-control",
+  "skills": [
+    "narrative-evaluate"
+  ],
+  "rubric": "diagnostic",
+  "cleanControl": true,
+  "prompt": "A short scene, outline and continuity record agree. Evaluate for production defects without rewriting.",
+  "groundTruth": {
+    "defectClasses": [],
+    "owningArtifacts": [
+      "none"
+    ],
+    "smallestSufficientScope": [
+      "none"
+    ],
+    "preserve": [],
+    "forbiddenChanges": []
+  },
+  "hardGates": [
+    "detection",
+    "evidence",
+    "routing",
+    "scope",
+    "preservation",
+    "boundary"
+  ]
+}

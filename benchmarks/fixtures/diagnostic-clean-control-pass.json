@@ -1,0 +1,44 @@
+{
+  "benchmarkVersion": 3,
+  "caseId": "diag-clean-control",
+  "caseFingerprint": "AUTO",
+  "runId": "scorer-self-test-clean-control-pass",
+  "repeats": [
+    {
+      "repeat": 1,
+      "diagnosis": {
+        "defectClasses": [],
+        "evidence": ["The scene, outline and continuity record agree on chronology, knowledge state and world rules."],
+        "owningArtifacts": ["none"],
+        "revisionScope": "none",
+        "preserveViolations": [],
+        "boundaryViolations": [],
+        "unrelatedFindings": []
+      }
+    },
+    {
+      "repeat": 2,
+      "diagnosis": {
+        "defectClasses": [],
+        "evidence": ["No contradiction between the supplied artifacts; no production defect to report."],
+        "owningArtifacts": [],
+        "revisionScope": "",
+        "preserveViolations": [],
+        "boundaryViolations": [],
+        "unrelatedFindings": []
+      }
+    },
+    {
+      "repeat": 3,
+      "diagnosis": {
+        "defectClasses": [],
+        "evidence": ["Outline beats map onto the scene as written; continuity record confirms the established state."],
+        "owningArtifacts": ["none"],
+        "revisionScope": "none",
+        "preserveViolations": [],
+        "boundaryViolations": [],
+        "unrelatedFindings": []
+      }
+    }
+  ]
+}

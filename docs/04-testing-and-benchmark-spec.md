@@ -2,423 +2,598 @@
 
 ## 1. Purpose
 
-This specification defines how Narrative Production Skills is tested and benchmarked, and serves as the runbook for those checks.
+This specification defines how Narrative Production Skills is tested and benchmarked, and serves as the runbook for measuring production quality.
 
-It exists to prevent a specific class of failure: a narrative can appear fluent and polished while silently violating approved decisions, leaking rejected alternatives, confusing planned events with canon, breaking character knowledge, or revising far more material than the diagnosed problem requires.
+The benchmark must detect two very different kinds of failure:
 
-Most of those failures should be discoverable before a complete manuscript, screenplay, or episodic production is generated.
+```text
+production-contract failure
+→ approved work is lost, canon is broken, the wrong artifact is revised, a pack is ignored
 
-The governing principle is:
+creative-quality failure
+→ the output obeys the contract but the story, scene, dialogue, pacing, medium fit, or style is weak
+```
+
+A fluent narrative is not automatically a correct production, and a contract-correct production is not automatically a strong narrative.
+
+The governing principles are:
 
 > **No narrative defect class should require a full production run to discover.**
+>
+> **Measure whether the system changes the right thing, not only whether it notices that something is wrong.**
+>
+> **Report a quality profile, not one authoritative story-quality number.**
 
-A second principle is equally important:
-
-> **A benchmark must measure whether the system changes the right thing, not only whether it notices that something is wrong.**
-
-This document complements `docs/02-creative-skills-workflows-and-artifacts-spec.md` and `docs/03-creative-skills-repository-and-contracts-spec.md`. It does not redefine their artifact or skill contracts.
+This document complements `docs/02-creative-skills-workflows-and-artifacts-spec.md`, `docs/03-creative-skills-repository-and-contracts-spec.md`, `docs/05-customisation-packs-spec.md`, and `docs/06-extension-pack-catalogue.md`.
 
 ---
 
-## 2. Testing Layers
+## 2. Quality Model
 
-| Layer | Question it answers | Model/provider required | Intended command |
+Quality is measured on six surfaces.
+
+```text
+1. Command correctness
+   one operation obeys its inputs, outputs, must/must-not rules and completion contract
+
+2. Skill orchestration
+   the skill chooses and sequences commands correctly without replaying unnecessary work
+
+3. Production correctness
+   lifecycle, selection, approval, canon, lineage, preservation, boundaries
+
+4. Narrative quality
+   causality, character, conflict, structure, scenes, continuity, setup/payoff, voice
+
+5. Extension-pack fidelity
+   medium, genre, style, audience, optional voice cast, pack-aware evaluation, handoff
+
+6. Pack-authoring quality
+   necessity, completeness, operational specificity, packaging, examples, evals, boundaries
+```
+
+These surfaces must remain separately visible in reports.
+
+A release must never hide a continuity regression behind a stronger prose score, or a weak pack behind a high aggregate story score.
+
+---
+
+## 3. Benchmark Suites
+
+The release benchmark contains **42 cases**.
+
+| Suite | Cases | What it measures | Default semantic repeats |
+|---|---:|---|---:|
+| `diagnostic` | 10 | defect detection, evidence, root-cause routing, revision scope, preservation, boundaries | 3 |
+| `production` | 15 | three examples at each of the five progressive levels | 3 |
+| `packs` | 12 | every current extension-pack showcase | 3 |
+| `pack-authoring` | 5 | `narrative-pack-create` behaviour | 3 |
+
+The suite count is deliberate, not a target to grow.
+
+Add cases only when a capability is added or a real failure justifies new coverage.
+
+### 3.1 Core Release Tier
+
+The core release tier is:
+
+```text
+diagnostic
++
+production
+```
+
+It tests the narrative workflow without requiring the entire extension-pack catalogue to be regenerated for every change.
+
+### 3.2 Catalogue Release Tier
+
+The catalogue tier is:
+
+```text
+packs
++
+pack-authoring
+```
+
+Run it when:
+
+- a pack changes;
+- pack consumption changes;
+- `narrative-pack-create` changes;
+- the catalogue changes;
+- preparing a release that claims pack support.
+
+A change to one pack may run that pack's case first. The full pack suite remains the release benchmark for the catalogue as a whole.
+
+### 3.3 Command Conformance Matrix
+
+Command-level evals are intentionally **not counted inside the 42-case release benchmark**.
+
+They form a component test matrix derived from the installed skill contracts:
+
+```text
+core production commands: 24
+pack-authoring commands:     5
+------------------------------
+total commands:             29
+
+minimum semantic cases per command:
+1 normal + 1 boundary
+
+minimum initial command cases: 58
+```
+
+Keeping this matrix separate avoids turning the end-to-end benchmark into hundreds of near-duplicate cases while still making every component falsifiable.
+
+Validate the complete command/eval matrix deterministically:
+
+```bash
+npm run test:commands
+```
+
+Prepare one semantic command case:
+
+```bash
+npm run build
+node dist/tools/run-command-evals.js --command revise:plan
+```
+
+Filter the case catalogue by skill when exploring coverage:
+
+```bash
+node dist/tools/run-command-evals.js --list --skill narrative-revise
+```
+
+The repository remains provider-neutral: semantic execution is performed by the host agent or an external harness, then the recorded structured result is scored offline.
+
+A full command-conformance measurement is required when command contracts, shared skill references, or skill orchestration change. A targeted command case is appropriate during development.
+
+---
+
+## 4. Testing Layers
+
+| Layer | Question | Model required | Command |
 |---|---|---|---|
-| typecheck / validate | Is the repository and skill packaging well formed? | no | `pnpm run check`, `pnpm run validate` |
-| unit | Do deterministic repository tools reject malformed input and unsafe states? | no | `pnpm test` |
-| contract | Do artifact and lifecycle invariants hold on synthetic fixtures? | no | `pnpm run test:contracts` |
-| evals | Are declared skill behaviours represented by falsifiable cases? | no for structure; opt-in for behaviour | `pnpm run test:evals` |
-| benchmark — deterministic | Are machine-checkable narrative invariants detected without false positives? | no | `pnpm run benchmark` |
-| benchmark — semantic, scoring | Does the benchmark score recorded answers correctly? | no | `node tools/run-benchmark.ts --rescore` |
-| benchmark — semantic, collection | Can the installed skills diagnose, route, and bound narrative defects? | opt-in | `RUN_SEMANTIC_BENCHMARK=1 node tools/run-benchmark.ts --repeat 3` |
-| install smoke | Can every intended skill be installed independently into a clean consumer project? | no model required | `pnpm run smoke:install` |
+| typecheck | Does deterministic tooling compile strictly? | no | `npm run check` |
+| repository validation | Are skills, commands and runtime references well formed? | no | `npm run validate` |
+| unit | Does deterministic tooling behave correctly? | no | `npm test` |
+| command definition | Are command contracts and their eval coverage structurally valid? | no | `npm run test:commands` |
+| command semantic | Does one command obey its independently testable production contract? | yes | command case protocol |
+| skill orchestration | Does the owning skill choose and sequence commands correctly? | yes | skill eval protocol |
+| benchmark definition | Are all cases, prompts, rubrics and catalogue coverage valid? | no | `npm run test:benchmark` |
+| install smoke | Can intended skills install independently with all command resources? | no model | `npm run smoke:install` |
+| diagnostic semantic | Can the system identify and correctly route seeded defects? | yes | case protocol |
+| production semantic | Is the generated narrative production-ready? | yes | case protocol |
+| pack semantic | Does the pack materially affect production in the intended way? | yes | case protocol |
+| pack-authoring semantic | Does pack creation produce a reusable, safe, testable skill package? | yes | case protocol |
 
-The Stage 11 scaffold already provides repository validation, tests, and installation smoke tooling. Contract, eval-runner, and benchmark commands are implementation requirements for the testing system defined here; they must not be reported as available until implemented.
+### 4.1 Layer Limits
 
-### 2.1 What Each Layer Cannot Do
+- **Typecheck** proves static correctness, not production behaviour.
+- **Repository validation** proves packaging and command-contract shape, not narrative quality.
+- **Unit tests** cannot judge causality, character motivation, pacing, voice, or dramatic effect.
+- **Command-definition validation** proves that command contracts and eval fixtures are present and well formed. It does not execute narrative behaviour.
+- **Command semantic evals** measure one operation in isolation. They do not prove that the owning skill chooses the right operation.
+- **Skill-orchestration evals** prove routing and sequencing. They do not establish end-to-end narrative quality.
+- **Benchmark-definition validation** proves the measurement system is wired correctly. It does not prove the system under test passes it.
+- **Diagnostic semantic cases** measure explicit seeded failures. They do not establish broad creative quality.
+- **Production semantic cases** depend on judgement and therefore require repeated measurement.
+- **Extension-pack cases** establish pack fidelity only for the current showcase prompts and relevant dimensions.
+- **Pack-authoring cases** establish the authoring contract, not whether every possible pack is useful.
+- **Install smoke tests** prove distribution, not production quality.
 
-Coverage boundaries must be explicit.
-
-- **typecheck / validate** prove packaging and static correctness. They do not prove narrative behaviour.
-- **unit** tests prove deterministic tool behaviour. They cannot judge character motivation, causality, pacing, or scene effectiveness.
-- **contract** tests can catch state violations such as `planned` being promoted to `canonical` without evidence. They cannot decide whether a story choice is creatively strong.
-- **evals** are only behavioural evidence when the case is executable. Prose-only examples are useful documentation but must not inflate automated coverage.
-- **deterministic benchmark** can test declared facts, lifecycle state, lineage, preserve sets, and structural invariants. It cannot reliably judge theme, voice, emotional impact, or whether an ending works.
-- **semantic benchmark** can judge narrative meaning, but model output is nondeterministic. A single sample is not a measurement.
-- **recorded transcripts** prove what was asked and answered. They become stale if the prompt, fixture, skill contract, model identity, or relevant input artifact changes.
-- **install smoke tests** prove distribution, not narrative quality.
-
-No layer may claim coverage for a class of failure it cannot observe.
-
----
-
-## 3. Standing Rules
-
-1. **A test that cannot run skips loudly or fails explicitly.** Missing capability must never appear as a green result.
-2. **Coverage is reported, not implied.** Automated, semantic, manual, skipped, and blocked cases are counted separately.
-3. **Every production defect that reaches an approved deliverable becomes a regression fixture.**
-4. **Every defect fixture has a clean control.** A benchmark without negative cases measures eagerness to complain, not discrimination.
-5. **Narrative fixtures are minimal.** Test the smallest artifact set that can expose the failure instead of generating an entire book or screenplay.
-6. **Approved material is part of the ground truth.** A benchmark must know what must survive, not only what must change.
-7. **The owning artifact is part of the ground truth.** Detection without root-cause routing is incomplete.
-8. **Revision scope is part of the ground truth.** A fix that solves the defect by rewriting unaffected approved material is still a failure.
-9. **Recorded semantic answers are retained.** Re-scoring should be free and offline.
-10. **Stale evidence is refused, not silently reused.** Editing the question or its relevant artifacts invalidates existing transcripts.
-11. **One semantic sample is not a measurement.** Use repeated runs and majority verdicts.
-12. **Flakiness is reported separately from regression.** Do not turn sampling noise into a hard gate.
-13. **No single numeric story-quality score is authoritative.** Report capabilities and defect classes separately.
-14. **Evaluation and revision remain distinct.** An evaluation benchmark must fail an answer that rewrites the story when only diagnosis was requested.
-15. **Benchmarks must not impose a mandatory story theory.** Three-act structure, Save the Cat, Hero's Journey, and similar frameworks may appear only when relevant to the fixture or requested by the user.
+No layer may claim coverage for a failure it cannot observe.
 
 ---
 
-## 4. Defect Taxonomy
+## 5. Standing Rules
 
-The benchmark taxonomy follows the production failures the skills are designed to prevent.
-
-### 4.1 Governance and Lifecycle
-
-```text
-approved-decision-loss
-rejected-candidate-leakage
-selected-candidate-ignored
-unapproved-promotion
-workflow-state-confusion
-preserve-set-violation
-```
-
-### 4.2 Continuity and Story State
-
-```text
-planned-as-canon
-canonical-fact-contradiction
-character-knowledge-leak
-character-belief-confusion
-secret-disclosure-error
-superseded-fact-reuse
-world-rule-violation
-chronology-contradiction
-```
-
-### 4.3 Structure and Causality
-
-```text
-missing-causal-link
-unmotivated-beat
-scene-without-change
-setup-without-payoff
-payoff-without-setup
-arc-state-contradiction
-stakes-discontinuity
-```
-
-### 4.4 Evaluation and Revision
-
-```text
-evaluation-rewrites-output
-symptom-not-root-cause
-wrong-owning-artifact
-revision-scope-too-broad
-revision-scope-too-narrow
-unaffected-approved-material-changed
-finding-without-evidence
-finding-invented-on-clean-control
-```
-
-### 4.5 Domain Boundaries
-
-```text
-screenplay-to-storyboard-leakage
-visual-character-design-leakage
-provider-requirement-invented
-mandatory-story-framework-imposed
-irrelevant-character-biography
-irrelevant-world-lore-expansion
-```
-
-These classes are not a universal taxonomy for fiction. They exist because they map to explicit Narrative Production Skills contracts.
+1. **A required check that cannot run is blocked, not passed.**
+2. **Coverage is reported, not implied.**
+3. **Every escaped approved-deliverable defect becomes a regression fixture.**
+4. **Every seeded defect class has a clean or non-defective comparison somewhere in the suite.**
+5. **Use the smallest fixture capable of exposing the failure.**
+6. **Approved work is ground truth.**
+7. **The owning artifact is ground truth.**
+8. **The smallest sufficient revision scope is ground truth.**
+9. **Evaluation and revision remain distinct.**
+10. **A benchmark must not impose one story theory.**
+11. **Extension-pack style labels are insufficient; the benchmark measures operational effects.**
+12. **Voice-enabled packs never require invented or unauthorised provider voice IDs.**
+13. **All current progressive example prompts are benchmarked.**
+14. **All current extension-pack showcase prompts are benchmarked.**
+15. **Semantic evidence is retained and fingerprinted.**
+16. **Changed cases, prompts or rubrics invalidate stale comparisons.**
+17. **One semantic sample is not a baseline.**
+18. **No single aggregate story score is a release gate.**
+19. **Every command has at least one normal and one boundary case.**
+20. **Command correctness and skill orchestration are reported separately.**
+21. **A command failure should identify the smallest failing operation rather than being hidden inside an end-to-end failure.**
+22. **Do not create benchmark-only command semantics; tests measure the same contracts installed with the skill.**
 
 ---
 
-## 5. Runbook
-
-### 5.1 Prerequisites
-
-Required for repository-level tests:
+## 6. Repository Layout
 
 ```text
-Node.js >= 22
-pnpm
-Git
-```
-
-Install development dependencies:
-
-```bash
-pnpm install
-```
-
-Optional deterministic tools such as Fountain parsers, Pandoc, Vale, or LanguageTool are tested only when a case explicitly depends on them.
-
-A missing optional tool must report `SKIP` or `NOT RUN`; it must not silently substitute another implementation.
-
-### 5.2 Run Current Scaffold Checks
-
-```bash
-pnpm run check
-pnpm run validate
-pnpm test
-pnpm run smoke:install
-```
-
-These commands exercise the Stage 11 repository scaffold.
-
-They do **not** constitute the complete narrative benchmark defined by this document.
-
-### 5.3 Run the Complete Test Suite
-
-Once the contract/eval/benchmark runners are implemented:
-
-```bash
-pnpm run test:all
-```
-
-The intended order is:
-
-```text
-typecheck
-→ repository validation
-→ unit
-→ contract tests
-→ eval structure
-→ deterministic benchmark
-→ install smoke
-```
-
-Semantic collection is intentionally excluded from default CI because it is nondeterministic and may incur provider cost.
-
-Exit `0` is the only pass for required deterministic layers.
-
-### 5.4 Run One Layer
-
-```bash
-pnpm run test:contracts
-pnpm run test:evals
-pnpm run benchmark
-pnpm run smoke:install
-```
-
-Run one benchmark class:
-
-```bash
-node tools/run-benchmark.ts --only continuity
-node tools/run-benchmark.ts --only revision
-node tools/run-benchmark.ts --only governance
-```
-
-### 5.5 Run One Skill's Evals
-
-```bash
-node tools/run-evals.ts --skill narrative-develop
-node tools/run-evals.ts --skill narrative-write
-node tools/run-evals.ts --skill narrative-continuity
-node tools/run-evals.ts --skill narrative-evaluate
-node tools/run-evals.ts --skill narrative-revise
-```
-
-The runner must report:
-
-```text
-total cases
-executable cases
-semantic cases
-manual cases
-skipped cases
-blocked cases
-```
-
-A prose-only eval case is never reported as an automated pass.
-
----
-
-## 6. Deterministic Contract Tests
-
-Deterministic tests should target facts and state transitions that do not require literary judgement.
-
-### 6.1 Decision Status
-
-Fixtures must prove:
-
-```text
-candidate ≠ selected
-selected ≠ approved
-rejected candidate cannot become downstream source implicitly
-superseded decision cannot silently reappear
-```
-
-### 6.2 Canon and Planning
-
-Fixtures must prove:
-
-```text
-planned event ≠ canonical fact
-character belief ≠ canonical fact
-secret known by reader ≠ secret known by character
-uncertain possibility ≠ established fact
-```
-
-### 6.3 Preserve / Change
-
-Given:
-
-```text
-preserve:
-- protagonist identity
-- approved ending
-
-change:
-- weak middle turn
-```
-
-an output that changes the protagonist identity or ending fails even if the new version reads well.
-
-### 6.4 Lineage
-
-Machine-checkable lineage may assert:
-
-```text
-selectedFrom references a real candidate
-derivedFrom references a real parent
-revisionSource references the diagnosed artifact or finding
-rejected candidates are not silent ancestors
-```
-
-### 6.5 Evaluation / Revision Separation
-
-When the requested operation is evaluation, the fixture fails if the response replaces or rewrites the source narrative instead of returning findings.
-
-### 6.6 Boundary Checks
-
-Deterministic text checks may reject explicit repository/runtime violations such as:
-
-```text
-mandatory provider API requirement
-repository-level /docs runtime dependency
-missing local artifact reference
-invalid eval JSON
-missing required SKILL.md frontmatter
-```
-
-Do not stretch deterministic checks into literary judgement.
-
----
-
-## 7. Semantic Benchmark
-
-The semantic tier measures behaviour that cannot be established from metadata alone.
-
-Cases live under:
-
-```text
-tests/fixtures/benchmark/
-├── taxonomy.json
+benchmarks/
+├── manifest.json
+├── README.md
+├── rubrics/
+│   ├── diagnostic.json
+│   ├── narrative-quality.json
+│   ├── pack-adherence.json
+│   └── pack-authoring.json
 ├── cases/
-├── controls/
-├── transcripts/
-└── baseline.json
+│   ├── diagnostic/
+│   ├── production/
+│   ├── packs/
+│   └── pack-authoring/
+└── fixtures/
+    ├── semantic-pass.json
+    ├── semantic-fail.json
+    ├── diagnostic-pass.json
+    ├── diagnostic-fail.json
+    ├── diagnostic-clean-control-pass.json
+    ├── diagnostic-clean-control-fail.json
+    └── diagnostic-precision-flag.json
+
+skills/<skill>/
+├── commands/
+└── evals/commands/
+
+tools/
+├── run-benchmark.ts
+└── run-command-evals.ts
 ```
 
-Each case records at least:
+Do not create committed result/baseline directories until measured evidence exists.
+
+---
+
+## 7. Runbook
+
+### 7.1 Deterministic Checks
+
+```bash
+npm install
+npm run check
+npm run validate
+npm test
+npm run test:benchmark
+```
+
+Run all deterministic checks defined by the repository:
+
+```bash
+npm run test:all
+```
+
+`test:all` does not collect semantic model results.
+
+### 7.2 Command and Skill Component Tests
+
+Validate all command definitions and the minimum eval matrix without model execution:
+
+```bash
+npm run test:commands
+```
+
+List or prepare the smallest relevant semantic case:
+
+```bash
+npm run build
+node dist/tools/run-command-evals.js --list --skill narrative-continuity
+node dist/tools/run-command-evals.js --command continuity:check
+node dist/tools/run-command-evals.js --command revise:plan
+```
+
+The prepared case must expose at least:
+
+```text
+skill
+command
+case ID
+command contract
+prompt / fixture
+expected behaviour
+forbidden behaviour
+case fingerprint
+```
+
+After the host agent or external harness executes the case, retain a structured result and score it offline:
+
+```bash
+node dist/tools/run-command-evals.js --score path/to/result.json
+```
+
+Then run the owning skill's orchestration evals before relying on an end-to-end benchmark.
+
+The preferred diagnosis order is:
+
+```text
+command
+→ skill orchestration
+→ cross-skill production contract
+→ end-to-end creative quality
+```
+
+This prevents a low-level regression from being diagnosed only as "the story benchmark got worse".
+
+### 7.3 List Benchmark Cases
+
+```bash
+npm run benchmark:list
+```
+
+Expected current coverage:
+
+```text
+diagnostic:      10
+production:       15
+packs:           12
+pack-authoring:   5
+-------------------
+total:           42
+```
+
+### 7.4 Prepare One Case
+
+Build first:
+
+```bash
+npm run build
+```
+
+Then:
+
+```bash
+node dist/tools/run-benchmark.js \
+  --case prod-level-1-tomorrows-receipt
+```
+
+The runner prints:
+
+```text
+case ID
+suite
+case fingerprint
+generation / diagnosis prompt
+measurement contract
+```
+
+The fingerprint binds the case definition, current prompt text, and current rubric.
+
+### 7.5 Score Recorded Results
+
+```bash
+node dist/tools/run-benchmark.js \
+  --score path/to/result.json
+```
+
+`--rescore` is an alias:
+
+```bash
+node dist/tools/run-benchmark.js \
+  --rescore path/to/result.json
+```
+
+Scoring is deterministic once the structured review has been recorded.
+
+### 7.6 Semantic Execution
+
+Narrative Production Skills intentionally does not require a provider-specific model runtime.
+
+Semantic collection therefore follows this protocol:
+
+```text
+prepare benchmark case
+→ install/run the requested skills in a clean consumer project
+→ retain generated artifact(s)
+→ review against the case rubric
+→ record structured scores/evidence
+→ score offline
+```
+
+The collection adapter may be implemented for a host agent later, but it must remain test infrastructure rather than a runtime dependency of the skills.
+
+---
+
+## 8. Case Definition
+
+Every case defines:
 
 ```text
 id
-class
-skill
-task
-inputArtifacts
-approvedConstraints
-preserve
-expectedDefect
-owningArtifact
-smallestSufficientScope
-forbiddenChanges
+suite
+capability
+skills
+rubric
+prompt OR promptSource
+hard gates
+required dimensions where semantic scoring is used
 ```
 
-### 7.1 Benchmark Passes
+### 8.1 Prompt Sources
 
-Each case is evaluated in two passes.
-
-#### Open Diagnosis
-
-The system receives the task and relevant artifacts without being told the seeded defect class.
-
-Question:
-
-> Can it notice and explain the real problem without being led to it?
-
-#### Corrective Diagnosis
-
-The system must then identify:
+The progressive and extension-pack suites reference the actual example README prompt:
 
 ```text
-finding
-owning artifact
-root cause
-smallest sufficient revision scope
-material to preserve
-material affected downstream
+examples/<example>/README.md
+examples/extension-packs/<pack>/README.md
 ```
 
-This second pass is deliberately stronger than a checklist pass. Narrative Production Skills must not merely say that something is wrong; it must route the correction to the right level.
+The runner extracts the fenced `## Prompt` block.
 
-### 7.2 Scoring Axes
+This creates an important invariant:
 
-Score the semantic benchmark on separate capabilities.
+> **The benchmark measures the examples the repository actually advertises.**
+
+Changing an example prompt changes the case fingerprint.
+
+---
+
+## 9. Command and Skill-Orchestration Benchmark
+
+### 9.1 Command Contract Axes
+
+Every command repeat is evaluated against the command's installed contract:
+
+```text
+input discipline
+→ uses supplied inputs and does not invent unavailable state
+
+context discipline
+→ reads only relevant artifacts/context
+
+output correctness
+→ produces the declared artifact/state or diagnosis
+
+must behaviour
+→ satisfies all applicable observable requirements
+
+must-not behaviour
+→ respects boundaries, preservation rules and forbidden side effects
+
+completion
+→ stops when the command's responsibility is complete
+```
+
+A command with a failed hard `Must Not` rule fails regardless of stylistic quality.
+
+### 9.2 Representative Failure Localisation
+
+```text
+symptom:
+approved ending changed during revision
+
+revise:diagnose PASS
+revise:plan PASS
+revise:apply FAIL  ← preserve set ignored
+revise:verify FAIL ← regression not caught
+
+skill orchestration
+→ correctly selected apply + verify
+
+end-to-end
+→ FAIL
+```
+
+This is more actionable than recording only an end-to-end failure.
+
+### 9.3 Skill-Orchestration Axes
+
+For each installable skill evaluate:
+
+```text
+command selection
+sequence correctness
+state/artifact handoff
+skip/re-entry behaviour
+upstream conflict handling
+stop condition
+```
+
+A skill must be able to enter at an already-resolved stage when sufficient approved inputs exist.
+
+### 9.4 Command Coverage Gate
+
+The initial expected catalogue is:
+
+```text
+narrative-develop:      7
+narrative-write:        5
+narrative-continuity:   4
+narrative-evaluate:     4
+narrative-revise:       4
+narrative-pack-create:  5
+--------------------------
+total:                 29
+```
+
+Repository validation must fail when:
+
+- a declared command file is missing;
+- a command is not referenced by its owning `SKILL.md` routing guidance;
+- a command lacks command-level evals;
+- a command eval points to a command that does not exist;
+- an installed skill would omit command resources required at runtime.
+
+The benchmark reports command coverage by skill rather than only one repository-wide percentage.
+
+---
+
+## 10. Diagnostic Benchmark
+
+The diagnostic suite contains ten minimal cases:
+
+```text
+clean control
+rejected candidate leakage
+planned-as-canon
+character knowledge leak
+world-rule violation
+root cause above the scene
+preserve approved ending
+Evaluation must not rewrite
+screenplay / storyboard boundary
+structure-neutral control
+```
+
+### 9.1 Diagnostic Axes
+
+Each repeat is scored independently on:
 
 #### Detection
 
-Did the answer identify the seeded defect?
+Did the system identify the seeded defect, or correctly leave a clean control alone?
 
 #### Evidence
 
-Did it support the finding with relevant story/artifact evidence rather than generic craft advice?
+Did the diagnosis cite supplied story/artifact evidence rather than generic craft advice?
 
 #### Routing
 
-Did it identify the correct highest upstream owning artifact?
-
-Example:
+Did it name an artifact that owns the correction for this defect?
 
 ```text
-symptom: scene feels arbitrary
-root cause: missing causal beat in story outline
+weak scene
+→ missing conflict in scene card
+→ or conflicting/identical objectives upstream
 ```
 
-A proposal to rewrite prose only fails routing.
+A prose rewrite fails routing when the root cause is structural.
+
+A case's `owningArtifacts` ground truth is the **set** of artifacts a correct routing may name, not
+an ordered root-cause-first list. For several defects it deliberately contains both the
+authoritative artifact that must not change and the artifact the correction belongs to — a world
+rule violated by a beat lists `world_bible` and `beat_sheet`; a knowledge leak lists
+`continuity_record` and `narrative_draft`. Routing passes when the diagnosis names any of them.
+
+Identifier comparisons for `defectClasses` and `owningArtifacts` are normalised (trimmed and case
+folded), so casing is not scored as a routing error.
 
 #### Scope
 
 Did it choose the smallest sufficient revision scope?
 
-A whole-story rewrite for one local scene defect fails even if it fixes the scene.
-
 #### Preservation
 
-Did it preserve approved material and explicit `preserve` constraints?
+Did approved and explicit preserve-set material survive?
+
+#### Boundary
+
+Did it remain inside Narrative Production Skills responsibilities?
 
 #### Precision
 
-Did it avoid inventing unrelated defects on a case designed to isolate one failure?
+Did it avoid inventing unrelated problems?
 
-#### Boundary Compliance
+Precision is reported separately from strict pass because a reviewer may identify a second genuine defect not seeded by the fixture.
 
-Did the answer stay inside Narrative Production Skills responsibilities?
+### 9.2 Strict Diagnostic Pass
 
-A screenplay case that responds by designing shots, lenses, or storyboard frames fails the boundary axis unless the user explicitly requested those downstream artifacts.
-
-### 7.3 Strict Verdict
-
-A strict case pass requires:
+A repeat passes only when:
 
 ```text
 detection
@@ -431,380 +606,635 @@ scope
 +
 preservation
 +
-boundary compliance
+boundary
 ```
 
-Precision is reported separately because a useful diagnosis may surface a second genuine problem that the fixture did not originally target.
+A correct diagnosis with the wrong revision target is not a pass.
 
-Do not hide capability differences inside one aggregate score.
+### 9.3 Recorded Diagnosis Shape
+
+A recorded repeat carries all seven fields of the diagnostic response schema, each correctly typed —
+six arrays of strings and `revisionScope` as a string:
+
+```text
+defectClasses  evidence  owningArtifacts  revisionScope
+preserveViolations  boundaryViolations  unrelatedFindings
+```
+
+Scoring refuses a repeat that omits one or writes one at the wrong type, rather than reading it as
+an empty list. For `preserveViolations`, `boundaryViolations` and `unrelatedFindings` an empty list
+is the *pass*, so coercing a malformed value scores the axis as a pass on every diagnostic case —
+the same false green a malformed `hardGateFailures` produced in the semantic suite. Report nothing
+found as `[]`, and no correction as `"none"`; there is no way to leave an axis unanswered.
+
+A defect case must declare a non-empty `groundTruth.defectClasses`, and a clean control must declare
+none. Detection is an `every` over the expected classes, and `every` over an empty list is true, so a
+defect case without them cannot fail detection — validation rejects the case and scoring refuses to
+run it. This is the same rule already applied to `owningArtifacts` and `smallestSufficientScope`.
 
 ---
 
-## 8. Initial Benchmark Cases
+## 11. Production Benchmark
 
-The first benchmark should remain small and diagnostic.
-
-### 8.1 Clean Control
-
-A coherent short scene with matching outline, character state, and continuity.
-
-Expected:
+The production suite uses fifteen progressive examples: three genre-diverse productions at each of five capability levels.
 
 ```text
-no seeded defect invented
-no unnecessary rewrite proposed
+Level 1 — complete narrative-production loop
+├── Tomorrow's Receipt
+├── Wrong Number, Right Song
+└── The Birthday Weather Machine
+
+Level 2 — continuity and information state
+├── Wedding Table Nine
+├── The Dragon's Three Promises
+└── The Duplicate Astronaut
+
+Level 3 — screenplay execution
+├── Returns Desk
+├── Table for Two
+└── The Princess's Day Off
+
+Level 4 — episodic / serial continuity
+├── Department of Minor Miracles
+├── Second Chance Café
+└── Local Legends Club
+
+Level 5 — cross-domain audiovisual handoff
+├── The Orchestra in the Walls
+├── Paper Moon Parade
+└── The Day Gravity Blinked
 ```
 
-### 8.2 Rejected Candidate Leakage
+The production suite intentionally spans comedy, romance, family work, fantasy, science fiction, children's adventure, ensemble storytelling and music/animation-oriented handoffs. Each example's README is the source of the generation prompt.
 
-A rejected concept contains a distinctive ending absent from the selected concept.
+### 10.1 Narrative Quality Scale
 
-The generated outline uses that rejected ending.
-
-Expected:
+Each relevant dimension uses a four-point anchored scale:
 
 ```text
-detect rejected-candidate leakage
-route to story_concept / selection lineage
-preserve selected concept decisions
+0 = fails or contradicts the requirement
+1 = material weakness; not production-ready
+2 = acceptable production quality
+3 = strong, deliberate execution
 ```
 
-### 8.3 Planned as Canon
+Do not use a 1–10 scale whose middle values have no operational meaning.
 
-The outline plans a revelation for a later chapter.
+### 10.2 Narrative Quality Dimensions
 
-An earlier scene refers to it as already established fact.
-
-Expected:
+Relevant dimensions are selected per case from:
 
 ```text
-detect planned-as-canon
-route to scene / continuity state
-preserve the planned future reveal
+instruction adherence
+causality
+character
+conflict and stakes
+structure and pacing
+scene purpose
+continuity
+setup and payoff
+voice and dialogue
+medium fit
+originality and specificity
+production discipline
 ```
 
-### 8.4 Character Knowledge Leak
+### 10.3 Hard Dimensions
 
-The reader knows the antagonist's identity, but the protagonist does not.
-
-The protagonist speaks as if they know it.
-
-Expected:
+The following are normally hard gates when relevant:
 
 ```text
-detect knowledge leak
-route to scene + continuity record
-preserve reader-visible information
+instruction adherence
+continuity
+medium fit
+production discipline
 ```
 
-### 8.5 World Rule Violation
+A beautifully written screenplay that violates approved canon is not production-ready.
 
-The world bible states that a mechanism has a hard limitation.
+### 10.4 Production Readiness
 
-A beat succeeds only by ignoring that limitation.
-
-Expected:
+One repeat is ready when:
 
 ```text
-detect world-rule violation
-route to beat / outline rather than prose polish
+no hard-gate failure
++
+every required dimension >= 2
 ```
 
-### 8.6 Root Cause Above the Scene
+Report each dimension separately.
 
-A scene lacks conflict because the outline gives both characters the same objective.
-
-Expected:
-
-```text
-detect scene symptom
-route root cause to outline / character objective
-revise affected descendants only
-```
-
-### 8.7 Preserve Approved Ending
-
-The middle of a story needs revision.
-
-The ending is approved and explicitly preserved.
-
-Expected:
-
-```text
-change middle only
-approved ending survives
-```
-
-### 8.8 Evaluation Must Not Rewrite
-
-The request is to evaluate a scene.
-
-Expected:
-
-```text
-editorial findings only
-no replacement scene
-```
-
-### 8.9 Screenplay Boundary
-
-The request is to draft screenplay pages from approved scene cards.
-
-Expected:
-
-```text
-screenplay narrative
-no storyboard
-no camera plan
-no visual character sheet
-```
-
-### 8.10 Structure-Neutral Control
-
-The story deliberately follows a non-three-act structure.
-
-Expected:
-
-```text
-evaluate on its own stated intent
-no forced three-act conversion
-```
-
-These ten cases are sufficient for the first benchmark. Add more only when real failures justify them.
+Do not sum them into an authoritative story-quality score.
 
 ---
 
-## 9. Semantic Collection and Recorded Evidence
+## 12. Extension-Pack Benchmark
 
-Semantic collection is opt-in.
+Every current catalogue showcase has a benchmark case.
 
-Example target command:
+Current catalogue coverage is **12/12**.
 
-```bash
-RUN_SEMANTIC_BENCHMARK=1 node tools/run-benchmark.ts --repeat 3
+The pack suite measures whether the pack materially changes production rather than merely adding a label to the prompt.
+
+### 11.1 Pack Dimensions
+
+#### Medium
+
+Does the output use the artifacts and conventions of the requested medium?
+
+#### Genre
+
+Does genre influence conflict, information, rhythm, expectation or audience experience without becoming a rigid formula?
+
+#### Style
+
+Is style expressed operationally through prose, dialogue, structure, performance direction, or other medium-relevant characteristics?
+
+#### Audience
+
+When relevant, does audience guidance materially affect production decisions?
+
+#### Voice Cast
+
+When applicable:
+
+```text
+roles are coherent
+performance direction is usable
+pronunciation/consistency requirements are preserved
+specific provider voices are referenced only when authorised
+no voice ID is invented merely to make the pack look complete
 ```
 
-The runner must print the planned number of model calls before invoking any paid provider-backed execution.
+#### Pack Consistency
 
-It must record:
+Does the pack survive from development through writing, evaluation and revision?
+
+#### Pack-Aware Evaluation
+
+Does evaluation preserve intentional traits while still detecting genuine defects?
+
+A naturalistic dialogue pack should not be penalised for incomplete sentences merely because a generic prose rubric prefers polished exposition.
+
+#### Handoff Boundary
+
+Does the pack hand off downstream requirements without absorbing visual, audio, web or game implementation into Narrative Production Skills?
+
+### 11.2 Pack Strict Pass
+
+Hard gates normally include:
+
+```text
+medium
+pack consistency
+pack-aware evaluation
+handoff boundary
+```
+
+Voice is a hard gate only where the pack actually configures a voice cast.
+
+---
+
+## 13. Pack-Authoring Benchmark
+
+`narrative-pack-create` has five benchmark cases aligned with its lifecycle evals:
+
+```text
+normal creation
+draft / catalogue-reuse decision
+refinement while preserving approved dimensions
+final release preparation
+boundary / unauthorised creator or voice imitation
+```
+
+### 12.1 Authoring Dimensions
+
+```text
+necessity
+contract completeness
+operational specificity
+self-contained packaging
+showcase prompt
+eval coverage
+voice safety
+project boundary
+```
+
+### 12.2 Most Important Gate: Necessity
+
+A pack creator that always creates a new pack fails.
+
+Before scaffolding, it must distinguish:
+
+```text
+existing pack already fits
+→ reuse
+
+one-project difference
+→ project instruction
+
+stable reusable production profile
+→ new pack
+```
+
+This prevents the extension system from becoming a combinatorial catalogue of trivial variants.
+
+### 12.3 Showcase Prompt Gate
+
+Every created pack must include a realistic README example with an exact fenced generation prompt.
+
+A pack without a runnable showcase is incomplete.
+
+---
+
+## 14. Semantic Judging Protocol
+
+Creative quality has no single objective ground truth.
+
+The benchmark therefore treats semantic judgement as measurement with known uncertainty, not as an oracle.
+
+### 13.1 Required Evidence
+
+A semantic review should record:
 
 ```text
 case ID
-skill version or repository revision
+case fingerprint
+repository revision
 host agent
-model/provider identity when observable
-prompt/question hash
-input artifact hashes
+writer model when observable
+reviewer model or human reviewer identity when appropriate
 repeat number
-raw answer
-scored dimensions
+generated artifact path/hash
+per-dimension score
+artifact-specific evidence
+hard-gate failures
 ```
 
-The benchmark must not introduce a mandatory provider API into the skills themselves. The collection harness is test infrastructure, not the Narrative Production Skills execution layer.
+### 13.2 Repeats
 
-### 9.1 Re-Scoring
+Use at least three repeats for a baseline.
 
-Recorded answers must be re-scoreable offline:
+Every case carries a repeat count: its own `defaultRepeats`, or the suite default from
+`benchmarks/manifest.json`. Scoring reports `expectedRepeats` and `underRepeated`, and warns when a
+result records fewer repeats than the case requires. A single repeat can still score `PASS` — it can
+never be `FLAKY` — so an under-repeated result is a measurement, not a baseline.
 
-```bash
-node tools/run-benchmark.ts --rescore
-```
-
-Changing a scoring rule must not require paying to recollect unchanged answers.
-
-### 9.2 Staleness
-
-A transcript is stale when any scored input changes materially, including:
+Report:
 
 ```text
-task text
-criteria
-fixture content
-approved constraints
-preserve set
-expected owning artifact
-skill contract
-model identity where the baseline is model-specific
+per-repeat readiness
+dimension medians
+pass rate
+flakiness
 ```
 
-Stale evidence is refused with a non-zero result for baseline operations.
+### 13.3 Judge Separation
 
-Do not silently score an answer against a question it was never asked.
+Where practical, do not use the exact same generation invocation as the only judge of its own output.
+
+Possible reviewers include:
+
+- a separate model invocation;
+- a different model;
+- a human reviewer;
+- a combination for important releases.
+
+### 13.4 Rubric Order Bias
+
+When a model judge is used for ordinal rubric scoring, vary or balance score-anchor ordering in calibration experiments rather than assuming presentation order is neutral.
+
+This is especially important before treating a judge configuration as a stable long-term benchmark component.
+
+### 13.5 Pairwise Comparison
+
+Pairwise comparison may be used when comparing two repository/model revisions.
+
+If used:
+
+```text
+blind A/B identity
+run A/B and B/A order
+compare the same prompt and benchmark revision
+retain both outputs
+```
+
+Pairwise preference is supplementary.
+
+It does not replace hard production invariants.
 
 ---
 
-## 10. Repeats, Baselines, Regressions and Flakes
+## 15. Results, Fingerprints and Staleness
 
-Use at least three repeats for a semantic baseline.
+A case fingerprint covers:
 
-A verdict is based on majority behaviour, but the observed rate must always be reported.
+```text
+case JSON
++
+resolved generation prompt
++
+rubric
+```
+
+A recorded result against a different fingerprint is stale.
+
+The runner refuses a mismatched fingerprint with:
+
+```text
+STALE RESULT
+```
+
+The fingerprint is required evidence (section 13.1), so the runner also refuses a result that omits
+it rather than treating an absent fingerprint as nothing to check. Reserve `"AUTO"` for deliberate
+local iteration: it skips the staleness comparison and warns that it did.
+
+Do not compare scores across changed prompts or rubrics as though they measured the same thing.
+
+### 14.1 Evidence Retention
+
+Once semantic runs begin, retain:
+
+```text
+generated outputs
+raw reviews
+structured review JSON
+case fingerprint
+scored report
+```
+
+Re-scoring the same structured evidence must remain free and offline.
+
+### 14.2 No Fabricated Baseline
+
+The repository currently has scorer fixtures only.
+
+They prove the scoring code, not Narrative Production Skills quality.
+
+Do not publish benchmark scores until real system-under-test outputs have been collected.
+
+---
+
+## 16. Pass, Flake and Regression Semantics
+
+### PASS
+
+All semantic repeats meet strict readiness.
+
+### FLAKY
+
+Some repeats meet strict readiness and some do not.
+
+Flakiness remains visible and should be investigated, but one flipped nondeterministic sample is not treated like a deterministic repository failure.
+
+### FAIL
+
+No repeat demonstrates strict readiness.
 
 ### Regression
 
-A case that previously demonstrated a capability and now fails every repeat on the same benchmark revision is a regression.
-
-### Flaky
-
-A case that passes some repeats and fails others is `FLAKY`.
-
-Flakiness is evidence about reliability and must remain visible, but one flipped sample does not automatically fail CI.
-
-### Tie
-
-A tie does not demonstrate the capability and therefore cannot establish a passing baseline.
-
-### Baseline Update
-
-Baseline updates are deliberate operations, never a side effect of a passing run.
-
-Target command:
-
-```bash
-RUN_SEMANTIC_BENCHMARK=1 node tools/run-benchmark.ts --repeat 3 --update-baseline
-```
-
-Do not change a fixture, prompt, and scorer in one benchmark revision and then compare the resulting number directly with the old baseline.
-
----
-
-## 11. Adding Coverage
-
-When a defect reaches an approved narrative deliverable:
-
-1. **Name the defect class.** Use an existing class where it genuinely fits.
-2. **Reduce it to the smallest useful fixture.** Do not preserve an entire novel when three artifacts expose the problem.
-3. **Add a clean control.** Prove the detector/reviewer can leave correct material alone.
-4. **Add deterministic coverage** where the failure is machine-checkable.
-5. **Add or update the relevant skill eval** with explicit `expect` and `forbid` behaviour.
-6. **Add a semantic benchmark case** when narrative judgement is required.
-7. **Record the owning artifact and smallest sufficient revision scope.**
-8. **Record the preserve set.**
-9. **Run the deterministic suite.**
-10. **Collect semantic evidence only when necessary**, then commit the resulting transcripts and baseline metadata.
-
-Changing an existing semantic case invalidates any transcript whose question or relevant evidence changed.
-
-That friction is deliberate. A benchmark that can be reworded until it passes without invalidating its history is not a benchmark.
-
----
-
-## 12. Triage
-
-| Symptom | Owning layer | Likely cause | Action |
-|---|---|---|---|
-| `validate` fails | repository | malformed skill or broken local reference | fix repository contract |
-| install smoke fails | packaging | selective skill is not self-contained | fix skill-local packaging |
-| deterministic canon test fails | continuity | invalid state promotion or stale reference | fix continuity/artifact state |
-| rejected candidate appears downstream | development / lineage | selection not respected | repair selection source and affected descendants |
-| character knows secret too early | continuity / scene | wrong task context or continuity state | correct context/state, then revise affected scene |
-| scene is weak but outline cause is sound | writing | local execution defect | revise scene only |
-| scene defect originates in beat/outline | development | upstream structural cause | revise upstream cause and affected descendants |
-| evaluation returns rewritten prose | evaluation | skill boundary violation | return findings; do not rewrite |
-| revision changes approved ending | revision | preserve contract ignored | restore ending and bound revision scope |
-| screenplay emits storyboard/camera plan | boundary | visual-production leakage | remove downstream visual-production work |
-| semantic result varies by repeat | benchmark | model nondeterminism | report `FLAKY`; inspect rate and case clarity |
-| semantic transcript rejected | benchmark evidence | fixture/question changed | recollect intentionally |
-
-The ordered diagnosis is:
+A regression is one of:
 
 ```text
-repository / packaging
-→ artifact state and continuity
-→ upstream story structure
-→ scene design
-→ prose / screenplay execution
-→ revision implementation
+previous strict case passes → now fails every repeat
+
+or
+
+previous required dimension median >= 2
+→ unchanged case now has median <= 1
 ```
 
-Do not retry prose repeatedly when the owning defect is upstream.
+Do not compare baselines when the case fingerprint changed.
 
 ---
 
-## 13. Measured Results
+## 17. Quality Assurance Policy
 
-No Narrative Production Skills semantic benchmark baseline exists yet.
+### Pull Requests
 
-Do not publish invented scores.
-
-The first measured-results section may be added only after:
+Required deterministic gates:
 
 ```text
-benchmark runner implemented
-+
-initial fixtures reviewed
-+
-clean controls included
-+
-semantic answers collected with repeats
-+
-baseline written deliberately
+npm run check
+npm run validate
+npm test
+npm run test:benchmark
 ```
 
-Report results by capability and defect class, for example:
+Run affected command and skill-orchestration cases when a skill/command changes, then run affected semantic benchmark cases when the change touches behaviour they measure.
+
+### Core Release Candidate
+
+Run:
 
 ```text
-detection
-routing
-scope
-preservation
-precision
-boundary compliance
+full command conformance for changed core skills
++
+skill-orchestration evals for changed core skills
++
+diagnostic suite
++
+production suite
 ```
 
-Do not collapse these into a single "story quality" number.
+### Extension-Pack Change
+
+Run:
+
+```text
+affected pack showcase
++
+relevant pack-authoring case when authoring behaviour changed
+```
+
+### Catalogue Release Candidate
+
+Run all:
+
+```text
+12 pack cases
++
+5 pack-authoring cases
+```
+
+### Escaped Production Defect
+
+The next change must include:
+
+```text
+reduced regression fixture
++
+clean control where needed
++
+relevant skill eval update
++
+benchmark case or deterministic assertion
+```
 
 ---
 
-## 14. Known Blind Spots Before the First Baseline
+## 18. Adding Coverage
 
-The initial design does not establish:
+When a defect reaches an approved deliverable:
 
-- whether a model can maintain quality across an entire novel-length context;
-- whether context selection remains reliable with very large casts or world bibles;
-- whether subtle thematic drift is detected consistently;
-- whether dialogue quality can be measured without overfitting to a style rubric;
-- whether repeated evaluation causes convergence toward generic prose;
-- whether routing remains accurate when multiple upstream defects interact;
-- whether discovery writing can update upstream artifacts without over-promoting speculative material.
+1. Name the defect class.
+2. Reduce it to the smallest useful artifact set.
+3. Identify the owning artifact.
+4. Define the smallest sufficient correction scope.
+5. Define the preserve set.
+6. Add deterministic coverage where possible.
+7. Add/update the smallest relevant command eval when the defect belongs to one operation.
+8. Add/update the owning skill-orchestration eval when routing or sequencing contributed.
+9. Add/update the relevant skill eval.
+10. Add a semantic benchmark case only when judgement is genuinely required.
+11. Add a clean comparison if false positives are plausible.
+12. Collect repeated evidence only after the fixture and rubric are reviewed.
 
-These belong in later stress suites after the core workflow works.
+When a new extension pack is added:
 
-Do not introduce vector databases, knowledge graphs, multi-agent reviewers, or dedicated model-routing infrastructure merely to benchmark these future cases.
+1. add its showcase README;
+2. include an exact `## Prompt`;
+3. add a matching pack benchmark case;
+4. define only relevant rubric dimensions;
+5. add voice scoring only when voice is part of the pack;
+6. validate with `npm run test:benchmark`.
 
----
-
-## 15. Acceptance Criteria
-
-The testing and benchmark design is correct when:
-
-1. repository correctness and narrative behaviour are tested separately;
-2. every automated layer states what it cannot observe;
-3. skill eval coverage distinguishes executable from manual cases;
-4. deterministic tests cover lifecycle, lineage, canon, preserve/change, and packaging invariants;
-5. semantic cases include clean controls;
-6. semantic cases score detection and evidence separately from routing and revision scope;
-7. approved material is represented explicitly in benchmark ground truth;
-8. root-cause ownership is represented explicitly in benchmark ground truth;
-9. a whole-story rewrite can fail even when it removes the seeded defect;
-10. evaluation-only cases fail if the system rewrites the narrative;
-11. domain-boundary cases detect leakage into visual production or provider infrastructure;
-12. semantic answers are retained and re-scoreable offline;
-13. changed questions invalidate stale transcripts;
-14. semantic baselines use repeated samples rather than single runs;
-15. flakes remain visible without being confused with deterministic regressions;
-16. no single numeric story-quality score becomes the release gate;
-17. real escaped defects become regression fixtures;
-18. future benchmark complexity is added only when real narrative-production failures justify it.
+The benchmark validator must fail if an extension-pack showcase exists without benchmark coverage.
 
 ---
 
-## 16. Related Documents
+## 19. Known Blind Spots
 
-- `docs/01-creative-skills-system-spec.md` — project boundaries, architecture, build order, system acceptance.
-- `docs/02-creative-skills-workflows-and-artifacts-spec.md` — lifecycle, artifact semantics, continuity, evaluation, and revision behaviour.
-- `docs/03-creative-skills-repository-and-contracts-spec.md` — skill contracts, eval packaging, TypeScript tooling, CI, and installation validation.
-- `docs/extraction-candidates.md` — cross-domain concepts under observation; testing abstractions are not extracted automatically.
+The initial benchmark does not yet establish:
+
+- novel-length or season-length quality at very large context sizes;
+- consistency error density over tens of thousands of words;
+- subtle theme evolution across a long work;
+- human preference across different literary traditions;
+- multilingual quality;
+- voice performance quality from generated audio;
+- downstream visual/audio/game asset quality after handoff;
+- whether one semantic judge systematically prefers its own style;
+- whether pack style distinctions remain discriminative across many adjacent packs;
+- whether repeated evaluation encourages generic prose convergence;
+- whether the initial command boundaries remain optimal after real implementation;
+- whether command-level semantic tests are stable across different host agents.
+
+These are later stress suites.
+
+Do not introduce a vector database, knowledge graph, multi-agent writers' room, or dedicated model router merely to make the benchmark look more sophisticated.
 
 ---
 
-**Narrative Production Skills — Testing and Benchmark Specification v1**
+## 20. Measured Results
+
+No production baseline has been recorded yet.
+
+Current measurable facts are repository coverage only:
+
+```text
+benchmark cases:       42
+diagnostic:            10
+progressive production: 15
+extension packs:       12
+pack authoring:         5
+core example coverage: 15/15
+extension-pack showcase coverage: 12/12
+command contracts implemented: 0/29 (specified; implementation pending)
+command eval minimum target: 58
+```
+
+These are **coverage counts**, not quality scores.
+
+The first quality baseline requires real generated outputs and at least three repeated semantic measurements per baselined case.
+
+---
+
+## 21. Prior Art and Design Rationale
+
+The benchmark borrows ideas selectively rather than adopting another benchmark wholesale.
+
+### ConStory-Bench
+
+Useful ideas:
+
+- narrative consistency deserves its own explicit defect taxonomy;
+- contradictions should be grounded in textual evidence;
+- character knowledge, timeline/plot, style, factual detail and world rules fail differently;
+- long-form consistency needs separate stress testing.
+
+Narrative Production Skills extends this concern with production-state semantics such as selected versus rejected, planned versus canonical, approved preservation, root-cause routing and smallest sufficient revision scope.
+
+### Creative Writing Benchmark / EQ-Bench
+
+Useful ideas:
+
+- creative-writing prompts should expose weaknesses rather than merely invite fluent prose;
+- repeated generations matter;
+- rubric and pairwise measurements expose different information;
+- judge bias and length/style preference must remain visible.
+
+Narrative Production Skills does not adopt Elo as its release metric because the project is measuring production capabilities and invariants, not only ranking writer models.
+
+### LitBench
+
+Useful conclusion:
+
+- off-the-shelf LLM judges do not perfectly reproduce human creative-writing preferences.
+
+Therefore benchmark reviews are evidence, not unquestionable ground truth. Important releases should retain outputs for human audit.
+
+### Rubric-Order Research
+
+Recent work shows rubric-based LLM judges can exhibit position bias.
+
+Therefore any long-lived semantic-judge configuration should be calibrated rather than assuming that numeric anchor presentation is neutral.
+
+---
+
+## 22. Acceptance Criteria
+
+The benchmark is correctly implemented when:
+
+```text
+✓ deterministic benchmark validation is executable
+✓ every benchmark case has a valid rubric
+✓ all fifteen progressive examples are covered
+✓ every extension-pack showcase is covered
+✓ current catalogue coverage is 12/12
+✓ all 29 initial commands are structurally discoverable inside their owning skills once implemented
+✓ every implemented command has at least one normal and one boundary eval case
+✓ command correctness is reported separately from skill orchestration
+✓ skill orchestration evals test command selection, sequencing, re-entry and stopping
+✓ command failures identify the smallest failing operation where possible
+✓ pack authoring has normal/draft/refine/final/boundary coverage
+✓ diagnostic cases include clean-control behaviour
+✓ diagnostic scoring separates detection, evidence, routing, scope, preservation and boundary
+✓ creative quality uses anchored dimensions rather than an ungrounded total score
+✓ extension-pack scoring separates medium, genre, style, voice and handoff concerns
+✓ pack-authoring scoring measures necessity, not only package completeness
+✓ hard production invariants can fail a creatively strong output
+✓ semantic repeats and flakiness remain visible
+✓ results are tied to a case fingerprint
+✓ stale result fingerprints are refused
+✓ recorded reviews can be re-scored offline
+✓ no fabricated semantic baseline is published
+✓ new pack showcases cannot silently escape benchmark coverage
+```
+
+---
+
+## 23. Related Documents
+
+- `docs/01-creative-skills-system-spec.md`
+- `docs/02-creative-skills-workflows-and-artifacts-spec.md`
+- `docs/03-creative-skills-repository-and-contracts-spec.md`
+- `docs/05-customisation-packs-spec.md`
+- `docs/06-extension-pack-catalogue.md`
+- `benchmarks/README.md`
+- `benchmarks/manifest.json`
+
+---
+
+**Narrative Production Skills — Testing and Benchmark Specification v5**  
+**27 August 2026**

@@ -1,0 +1,75 @@
+{
+  "id": "narrative-quality",
+  "scale": {
+    "min": 0,
+    "max": 3,
+    "anchors": {
+      "0": "fails or contradicts the requirement",
+      "1": "material weakness; not ready",
+      "2": "acceptable production quality",
+      "3": "strong, deliberate execution"
+    }
+  },
+  "dimensions": [
+    {
+      "id": "instruction-adherence",
+      "kind": "hard",
+      "description": "Satisfies explicit prompt and approved constraints."
+    },
+    {
+      "id": "causality",
+      "kind": "quality",
+      "description": "Events follow from understandable causes and choices."
+    },
+    {
+      "id": "character",
+      "kind": "quality",
+      "description": "Motivation, behaviour, relationships and arc states are coherent."
+    },
+    {
+      "id": "conflict-stakes",
+      "kind": "quality",
+      "description": "Conflict and stakes create meaningful dramatic pressure."
+    },
+    {
+      "id": "structure-pacing",
+      "kind": "quality",
+      "description": "Narrative progression and pacing fit the intended form."
+    },
+    {
+      "id": "scene-purpose",
+      "kind": "quality",
+      "description": "Scenes/units cause meaningful narrative change rather than merely occupying space."
+    },
+    {
+      "id": "continuity",
+      "kind": "hard",
+      "description": "Canon, chronology, knowledge, beliefs, world rules and established state remain coherent."
+    },
+    {
+      "id": "setup-payoff",
+      "kind": "quality",
+      "description": "Setups, reveals and payoffs are causally and temporally supported."
+    },
+    {
+      "id": "voice-dialogue",
+      "kind": "quality",
+      "description": "Voice/dialogue is controlled, specific and appropriate to the brief."
+    },
+    {
+      "id": "medium-fit",
+      "kind": "hard",
+      "description": "Output behaves like the requested narrative medium rather than a generic prose response."
+    },
+    {
+      "id": "originality-specificity",
+      "kind": "quality",
+      "description": "Avoids generic filler and develops specific choices from the brief without unsupported sprawl."
+    },
+    {
+      "id": "production-discipline",
+      "kind": "hard",
+      "description": "Preserves approved decisions, avoids unnecessary regeneration and respects project boundaries."
+    }
+  ]
+}

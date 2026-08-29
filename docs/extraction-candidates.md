@@ -39,6 +39,8 @@ Design similarity alone is insufficient.
 | Selection/approval | Video selects draft candidates and works from approved artifacts | Narrative formalises `candidate → selected → approved` as a separate decision axis | Partial overlap; Video does not currently expose the same independent decision-status contract | observe only |
 | Preserve/change refinement | Video rule: preserve approved decisions and change only what needs to change | Narrative makes `preserve` and `change` explicit revision constraints | Strong common principle; contract equivalence still unproven | observe only |
 | Staged evaluation | Draft/refine/final evaluation intensity with video-specific criteria | Draft/refine/final evaluation intensity with narrative-specific criteria | Lifecycle pattern looks reusable; domain evaluation semantics remain separate | observe only |
+| Customisation-pack contract | Video Production has a vertical customisation-pack design combining format, genre, style, audience and optional voice casting | Narrative defines a vertical pack contract combining medium, genre, style, audience, optional voice casting, pack-aware evaluation and artifact handoffs | Strong design similarity, but neither domain has yet proved a stable shared implementation contract; keep both vertical until real use demonstrates equivalence | observe only |
+| Skill-local command decomposition | No stable shared family contract has been established | Narrative decomposes installable skills into local command contracts for component testing and orchestration without exposing commands as separate skills | Potentially useful across production domains, but it must first prove that the same command contract and testing model is useful outside Narrative | observe only |
 
 ---
 
@@ -157,4 +159,4 @@ Do not extract merely to reduce repeated wording between specifications.
 
 ---
 
-**Narrative Production Skills — Extraction Candidate Register v1**
+**Narrative Production Skills — Extraction Candidate Register v3**

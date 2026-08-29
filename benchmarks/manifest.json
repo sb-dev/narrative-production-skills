@@ -1,0 +1,60 @@
+{
+  "name": "Narrative Production Skills Capability Benchmark",
+  "version": 3,
+  "principles": [
+    "measure capability profiles, not one story-quality score",
+    "separate deterministic contract checks from semantic judgement",
+    "score detection separately from root-cause routing and revision scope",
+    "treat approved decisions, pack constraints, and medium boundaries as hard ground truth",
+    "retain semantic evidence and refuse stale comparisons"
+  ],
+  "suites": [
+    {
+      "id": "diagnostic",
+      "description": "Seeded narrative defects and clean controls.",
+      "caseDirectory": "benchmarks/cases/diagnostic",
+      "defaultRepeats": 3,
+      "releaseTier": "core"
+    },
+    {
+      "id": "production",
+      "description": "Every progressive example, three at each of the five levels, exercising complete production behaviour.",
+      "caseDirectory": "benchmarks/cases/production",
+      "defaultRepeats": 3,
+      "releaseTier": "core"
+    },
+    {
+      "id": "packs",
+      "description": "Every extension-pack showcase prompt, measuring medium/genre/style/audience/voice adherence.",
+      "caseDirectory": "benchmarks/cases/packs",
+      "defaultRepeats": 3,
+      "releaseTier": "catalogue"
+    },
+    {
+      "id": "pack-authoring",
+      "description": "Extension-pack creation and boundary behaviour.",
+      "caseDirectory": "benchmarks/cases/pack-authoring",
+      "defaultRepeats": 3,
+      "releaseTier": "catalogue"
+    }
+  ],
+  "rubrics": {
+    "diagnostic": "benchmarks/rubrics/diagnostic.json",
+    "narrative-quality": "benchmarks/rubrics/narrative-quality.json",
+    "pack-adherence": "benchmarks/rubrics/pack-adherence.json",
+    "pack-authoring": "benchmarks/rubrics/pack-authoring.json"
+  },
+  "releasePolicy": {
+    "deterministicCI": [
+      "pnpm run check",
+      "pnpm run validate",
+      "pnpm test",
+      "pnpm run test:benchmark"
+    ],
+    "semanticBaselineRepeats": 3,
+    "singleAggregateScore": false,
+    "strictReadiness": "all hard gates pass and every required scored dimension has median >= 2 on a 0-3 scale",
+    "flaky": "mixed strict-readiness outcomes across repeats",
+    "regression": "previously passing strict case fails every repeat, or a previously acceptable required dimension has median <= 1 on an unchanged benchmark case"
+  }
+}

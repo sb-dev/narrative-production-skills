@@ -1,0 +1,42 @@
+{
+  "id": "diagnostic",
+  "scale": "boolean/ground-truth",
+  "axes": [
+    {
+      "id": "detection",
+      "description": "Identifies the seeded defect class, or correctly identifies a clean control."
+    },
+    {
+      "id": "evidence",
+      "description": "Grounds the finding in the supplied artifacts."
+    },
+    {
+      "id": "routing",
+      "description": "Names an artifact from the case's owningArtifacts set, which lists every artifact a correct routing may name — the authoritative artifact the defect violates and the artifact the correction belongs to are both acceptable, in any order."
+    },
+    {
+      "id": "scope",
+      "description": "Chooses the smallest sufficient correction scope."
+    },
+    {
+      "id": "preservation",
+      "description": "Preserves approved and explicit preserve-set material."
+    },
+    {
+      "id": "boundary",
+      "description": "Stays inside Narrative Production Skills responsibilities."
+    },
+    {
+      "id": "precision",
+      "description": "Avoids inventing unrelated defects; reported separately from strict pass."
+    }
+  ],
+  "strict": [
+    "detection",
+    "evidence",
+    "routing",
+    "scope",
+    "preservation",
+    "boundary"
+  ]
+}

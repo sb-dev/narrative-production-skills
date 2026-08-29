@@ -12,7 +12,11 @@
     "test": "pnpm run build && node --test dist/tests/*.test.js",
     "validate": "pnpm run build && node dist/scripts/validate-skills.js",
     "smoke:install": "pnpm run build && node dist/scripts/smoke-install.js",
-    "smoke:install:codex": "pnpm run smoke:install -- --agent codex"
+    "smoke:install:codex": "pnpm run smoke:install -- --agent codex",
+    "test:benchmark": "pnpm run build && node dist/tools/run-benchmark.js",
+    "benchmark": "pnpm run test:benchmark",
+    "benchmark:list": "pnpm run build && node dist/tools/run-benchmark.js --list",
+    "test:all": "pnpm run check && pnpm run validate && pnpm test && pnpm run test:benchmark"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

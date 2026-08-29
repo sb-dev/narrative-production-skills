@@ -1,0 +1,38 @@
+{
+  "id": "diag-screenplay-boundary",
+  "suite": "diagnostic",
+  "capability": "screenplay-to-storyboard-leakage",
+  "skills": [
+    "narrative-write"
+  ],
+  "rubric": "diagnostic",
+  "cleanControl": false,
+  "prompt": "Task: write Fountain screenplay pages from the approved scene card. Response includes lens choices, shot numbers, lighting diagrams and storyboard instructions not requested by the user. Diagnose.",
+  "groundTruth": {
+    "defectClasses": [
+      "screenplay-to-storyboard-leakage"
+    ],
+    "owningArtifacts": [
+      "screenplay"
+    ],
+    "smallestSufficientScope": [
+      "screenplay output"
+    ],
+    "preserve": [
+      "approved scene story decisions"
+    ],
+    "forbiddenChanges": [
+      "camera plan",
+      "storyboard",
+      "lighting plan"
+    ]
+  },
+  "hardGates": [
+    "detection",
+    "evidence",
+    "routing",
+    "scope",
+    "preservation",
+    "boundary"
+  ]
+}

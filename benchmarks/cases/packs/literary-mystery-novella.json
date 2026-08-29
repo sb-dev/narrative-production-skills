@@ -1,0 +1,30 @@
+{
+  "id": "pack-literary-mystery-novella",
+  "suite": "packs",
+  "capability": "extension-pack-adherence",
+  "skills": [
+    "narrative-develop",
+    "narrative-write",
+    "narrative-evaluate",
+    "narrative-revise"
+  ],
+  "pack": "literary-mystery-novella",
+  "rubric": "pack-adherence",
+  "promptSource": "examples/extension-packs/literary-mystery-novella/README.md",
+  "requiredDimensions": [
+    "medium",
+    "genre",
+    "style",
+    "audience",
+    "pack-consistency",
+    "pack-aware-evaluation",
+    "handoff-boundary"
+  ],
+  "hardGates": [
+    "medium",
+    "pack-consistency",
+    "pack-aware-evaluation",
+    "handoff-boundary"
+  ],
+  "defaultRepeats": 3
+}
