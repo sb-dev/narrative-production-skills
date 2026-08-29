@@ -56,6 +56,14 @@ iteration; it skips the staleness check and says so.
 Scoring also reports `expectedRepeats` and `underRepeated`, and warns when fewer repeats were
 recorded than the case requires — a single repeat can score `PASS` but is not a baseline.
 
+A diagnostic repeat must carry all seven fields of the response schema, each correctly typed. There
+is no way to leave one unanswered: report nothing found as `[]`, and no correction as `"none"`.
+Scoring throws on a missing or wrongly typed field rather than reading it as an empty list, because
+for `preserveViolations`, `boundaryViolations` and `unrelatedFindings` an empty list is the pass — so
+the bare-string typo that is rejected for `hardGateFailures` would otherwise pass those axes on every
+diagnostic case. (`hardGateFailures`, in the semantic suite, may be omitted, which means none; when
+present it must be an array of strings.)
+
 ## Diagnostic ground truth
 
 `owningArtifacts` is the **set** of artifacts a correct routing may name — not an ordered
@@ -67,6 +75,10 @@ change and the artifact the correction belongs to (`world_bible` with `beat_shee
 Diagnostic ground truth must declare a non-empty `owningArtifacts` and `smallestSufficientScope`;
 omitting them would invert the routing and scope axes so that refusing to answer scored a pass. Use
 `["none"]` when the correct answer is to change nothing.
+
+A defect case must likewise declare a non-empty `defectClasses`, and a clean control must declare
+none. Detection is an `every` over the expected classes, and `every` over an empty list is true, so a
+defect case without them could never fail detection.
 
 `smallestSufficientScope` is a list of acceptable phrasings; a recorded `revisionScope` matches if it
 equals any of them after trimming and case folding. Use `["none"]` when the correct answer is to

@@ -554,7 +554,7 @@ Did the diagnosis cite supplied story/artifact evidence rather than generic craf
 
 #### Routing
 
-Did it identify the highest useful owning artifact?
+Did it name an artifact that owns the correction for this defect?
 
 ```text
 weak scene
@@ -610,6 +610,27 @@ boundary
 ```
 
 A correct diagnosis with the wrong revision target is not a pass.
+
+### 9.3 Recorded Diagnosis Shape
+
+A recorded repeat carries all seven fields of the diagnostic response schema, each correctly typed —
+six arrays of strings and `revisionScope` as a string:
+
+```text
+defectClasses  evidence  owningArtifacts  revisionScope
+preserveViolations  boundaryViolations  unrelatedFindings
+```
+
+Scoring refuses a repeat that omits one or writes one at the wrong type, rather than reading it as
+an empty list. For `preserveViolations`, `boundaryViolations` and `unrelatedFindings` an empty list
+is the *pass*, so coercing a malformed value scores the axis as a pass on every diagnostic case —
+the same false green a malformed `hardGateFailures` produced in the semantic suite. Report nothing
+found as `[]`, and no correction as `"none"`; there is no way to leave an axis unanswered.
+
+A defect case must declare a non-empty `groundTruth.defectClasses`, and a clean control must declare
+none. Detection is an `every` over the expected classes, and `every` over an empty list is true, so a
+defect case without them cannot fail detection — validation rejects the case and scoring refuses to
+run it. This is the same rule already applied to `owningArtifacts` and `smallestSufficientScope`.
 
 ---
 

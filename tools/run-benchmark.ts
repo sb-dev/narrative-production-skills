@@ -42,6 +42,21 @@ export interface BenchmarkGroundTruth {
   readonly forbiddenChanges?: readonly string[];
 }
 
+/**
+ * One recorded diagnosis, after parsing. Every field is required and typed: `scoreDiagnostic` reads
+ * an empty list as "nothing to report", so a malformed or absent field would score its axis as a
+ * pass. See `parseDiagnosis`.
+ */
+export interface RecordedDiagnosis {
+  readonly defectClasses: readonly string[];
+  readonly evidence: readonly string[];
+  readonly owningArtifacts: readonly string[];
+  readonly revisionScope: string;
+  readonly preserveViolations: readonly string[];
+  readonly boundaryViolations: readonly string[];
+  readonly unrelatedFindings: readonly string[];
+}
+
 export interface BenchmarkManifest {
   readonly version: number;
   readonly suites: readonly {
@@ -443,6 +458,18 @@ export async function validateBenchmark(repositoryRoot: string): Promise<Benchma
             );
           }
         }
+        // `defectClasses` is the third axis with the same hole: detection is
+        // `expectedDefects.every(...)`, which is vacuously true over an empty list, so a defect case
+        // that omits it scores detection as a pass on every repeat — including one that found
+        // nothing. A clean control is the inverse: it must declare none.
+        const declaredDefects = c.groundTruth.defectClasses ?? [];
+        if (c.cleanControl === true) {
+          if (declaredDefects.length > 0) {
+            errors.push(`${c.id}: clean control must not declare groundTruth.defectClasses`);
+          }
+        } else if (declaredDefects.length === 0) {
+          errors.push(`${c.id}: diagnostic groundTruth.defectClasses must be non-empty for a defect case`);
+        }
       }
       if (rubric && hardGates.length > 0 && !sameSet(hardGates, rubric.hardIds)) {
         errors.push(`${c.id}: hardGates must equal the ${c.rubric} rubric's strict axes (${rubric.hardIds.join(", ")})`);
@@ -519,8 +546,49 @@ function statusFromPasses(passed: number, total: number): "PASS" | "FLAKY" | "FA
 }
 
 /** Identifier comparisons are normalised, so casing and stray whitespace are not scored as errors. */
-function normalisedSet(value: unknown): Set<string> {
-  return new Set((asStringArray(value) ?? []).map(normalise));
+function normalisedSet(values: readonly string[]): Set<string> {
+  return new Set(values.map(normalise));
+}
+
+const diagnosisListFields = [
+  "defectClasses",
+  "evidence",
+  "owningArtifacts",
+  "preserveViolations",
+  "boundaryViolations",
+  "unrelatedFindings",
+] as const;
+
+/**
+ * Every field of a recorded diagnosis must be present and correctly typed. `asStringArray(x) ?? []`
+ * turns a type error into "nothing to report", and for `preserveViolations`, `boundaryViolations`
+ * and `unrelatedFindings` that reads as a pass on every diagnostic case — so the bare-string typo
+ * that was rejected for `hardGateFailures` published a false green here instead. Absent is not
+ * permissive either: an omitted field is indistinguishable from an unchecked one, and the response
+ * schema asks for all seven. Report nothing found as `[]`, and no correction as `"none"`.
+ */
+function parseDiagnosis(value: unknown, context: string): RecordedDiagnosis {
+  if (!isObject(value)) throw new Error(`${context}: diagnosis must be an object`);
+  const list = (name: (typeof diagnosisListFields)[number]): readonly string[] => {
+    const raw = value[name];
+    if (raw === undefined) throw new Error(`${context}: diagnosis is missing ${name} (report none as [])`);
+    const items = asStringArray(raw);
+    if (!items) throw new Error(`${context}: diagnosis.${name} must be an array of strings`);
+    return items;
+  };
+  const revisionScope = value["revisionScope"];
+  if (typeof revisionScope !== "string") {
+    throw new Error(`${context}: diagnosis.revisionScope must be a string (use "none" when nothing should change)`);
+  }
+  return {
+    defectClasses: list("defectClasses"),
+    evidence: list("evidence"),
+    owningArtifacts: list("owningArtifacts"),
+    revisionScope,
+    preserveViolations: list("preserveViolations"),
+    boundaryViolations: list("boundaryViolations"),
+    unrelatedFindings: list("unrelatedFindings"),
+  };
 }
 
 function scoreDiagnostic(benchmarkCase: BenchmarkCase, repeats: readonly unknown[]): ScoreSummary {
@@ -528,27 +596,32 @@ function scoreDiagnostic(benchmarkCase: BenchmarkCase, repeats: readonly unknown
   const axisPasses: Record<string, number> = Object.fromEntries(diagnosticReportedAxes.map((axis) => [axis, 0]));
   let strictPasses = 0;
 
-  for (const rawRepeat of repeats) {
-    if (!isObject(rawRepeat) || !isObject(rawRepeat["diagnosis"])) {
-      throw new Error("Diagnostic repeat must contain diagnosis");
-    }
-    const diagnosis = rawRepeat["diagnosis"];
+  const expectedDefects = (ground.defectClasses ?? []).map(normalise);
+  // `every` over an empty list is true, so a defect case with no expected defect classes cannot
+  // fail detection. validateBenchmark rejects such a case; refuse to score one here too rather than
+  // report a pass that measured nothing.
+  if (benchmarkCase.cleanControl !== true && expectedDefects.length === 0) {
+    throw new Error(`${benchmarkCase.id}: defect case declares no groundTruth.defectClasses, so detection cannot fail`);
+  }
 
-    const foundDefects = normalisedSet(diagnosis["defectClasses"]);
-    const expectedDefects = (ground.defectClasses ?? []).map(normalise);
+  repeats.forEach((rawRepeat, index) => {
+    if (!isObject(rawRepeat)) throw new Error(`${benchmarkCase.id} repeat ${index + 1}: repeat must be an object`);
+    const diagnosis = parseDiagnosis(rawRepeat["diagnosis"], `${benchmarkCase.id} repeat ${index + 1}`);
+
+    const foundDefects = normalisedSet(diagnosis.defectClasses);
     const detection =
       benchmarkCase.cleanControl === true
         ? foundDefects.size === 0
         : expectedDefects.every((item) => foundDefects.has(item));
 
-    const evidence = (asStringArray(diagnosis["evidence"]) ?? []).length > 0;
+    const evidence = diagnosis.evidence.length > 0;
 
     // `owningArtifacts` is the SET of artifacts a correct routing may name for this defect; it is
     // not ordered root-cause-first. In several cases the authoritative artifact — the one in the
     // preserve set, which must not change — is listed alongside the one the correction belongs to
     // (world_bible before beat_sheet, continuity_record before narrative_draft), so requiring a
     // particular entry would fail the correct answer. See benchmarks/README.md.
-    const owners = normalisedSet(diagnosis["owningArtifacts"]);
+    const owners = normalisedSet(diagnosis.owningArtifacts);
     const expectedOwners = (ground.owningArtifacts ?? []).map(normalise);
     const routing =
       expectedOwners.length === 0 || expectedOwners.includes("none")
@@ -556,16 +629,15 @@ function scoreDiagnostic(benchmarkCase: BenchmarkCase, repeats: readonly unknown
         : expectedOwners.some((owner) => owners.has(owner));
 
     const expectedScopes = (ground.smallestSufficientScope ?? []).map(normalise);
-    const rawScope = diagnosis["revisionScope"];
-    const actualScope = normalise(typeof rawScope === "string" ? rawScope : "");
+    const actualScope = normalise(diagnosis.revisionScope);
     const scope =
       expectedScopes.length === 0 || expectedScopes.includes("none")
         ? actualScope === "none" || actualScope === ""
         : expectedScopes.includes(actualScope);
 
-    const preservation = (asStringArray(diagnosis["preserveViolations"]) ?? []).length === 0;
-    const boundary = (asStringArray(diagnosis["boundaryViolations"]) ?? []).length === 0;
-    const precision = (asStringArray(diagnosis["unrelatedFindings"]) ?? []).length === 0;
+    const preservation = diagnosis.preserveViolations.length === 0;
+    const boundary = diagnosis.boundaryViolations.length === 0;
+    const precision = diagnosis.unrelatedFindings.length === 0;
 
     const row: Record<DiagnosticAxis, boolean> = {
       detection,
@@ -578,7 +650,7 @@ function scoreDiagnostic(benchmarkCase: BenchmarkCase, repeats: readonly unknown
     };
     for (const axis of diagnosticReportedAxes) if (row[axis]) axisPasses[axis] = (axisPasses[axis] ?? 0) + 1;
     if (diagnosticStrictAxes.every((axis) => row[axis])) strictPasses += 1;
-  }
+  });
 
   return {
     caseId: benchmarkCase.id,

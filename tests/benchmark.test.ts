@@ -180,6 +180,99 @@ test("a malformed hardGateFailures value throws rather than scoring as no failur
   }
 });
 
+// The same idiom that let `hardGateFailures` publish a false green survived six times in the
+// diagnostic scorer. `preserveViolations` and `boundaryViolations` are the dangerous direction:
+// a malformed value read as "nothing to report", passing the axis on every diagnostic case.
+test("a malformed diagnosis field throws rather than scoring its axis as a pass", async () => {
+  const entry = await caseEntry("diag-preserve-approved-ending");
+  const ground = entry.case.groundTruth ?? {};
+  const wellFormed = {
+    defectClasses: [...(ground.defectClasses ?? [])],
+    evidence: ["synthetic"],
+    owningArtifacts: [...(ground.owningArtifacts ?? [])],
+    revisionScope: (ground.smallestSufficientScope ?? [])[0] ?? "none",
+    preserveViolations: [] as unknown,
+    boundaryViolations: [] as unknown,
+    unrelatedFindings: [] as unknown,
+  };
+  const withDiagnosis = (overrides: Record<string, unknown>): unknown => ({
+    caseId: entry.case.id,
+    repeats: [{ repeat: 1, diagnosis: { ...wellFormed, ...overrides } }],
+  });
+
+  assert.equal(scoreResultObject(entry.case, withDiagnosis({})).status, "PASS");
+  // The measurement this protects: a real preserve-set violation must score FAIL, and the
+  // bare-string typo of the same finding must not quietly score PASS instead.
+  assert.equal(
+    scoreResultObject(entry.case, withDiagnosis({ preserveViolations: ["the approved ending was rewritten"] })).status,
+    "FAIL",
+  );
+  assert.throws(
+    () => scoreResultObject(entry.case, withDiagnosis({ preserveViolations: "the approved ending was rewritten" })),
+    /preserveViolations/,
+  );
+
+  const listFields = [
+    "defectClasses",
+    "evidence",
+    "owningArtifacts",
+    "preserveViolations",
+    "boundaryViolations",
+    "unrelatedFindings",
+  ] as const;
+  for (const field of listFields) {
+    for (const malformed of ["a string", { flagged: true }, [1], null, 3]) {
+      assert.throws(() => scoreResultObject(entry.case, withDiagnosis({ [field]: malformed })), new RegExp(field));
+    }
+    // Absent is not permissive either: an omitted field is an unchecked one, not an empty one.
+    const { [field]: _omitted, ...withoutField } = wellFormed;
+    assert.throws(
+      () => scoreResultObject(entry.case, { caseId: entry.case.id, repeats: [{ repeat: 1, diagnosis: withoutField }] }),
+      new RegExp(`missing ${field}`),
+    );
+  }
+
+  for (const malformed of [["beat-7"], null, 7, undefined]) {
+    assert.throws(() => scoreResultObject(entry.case, withDiagnosis({ revisionScope: malformed })), /revisionScope/);
+  }
+  assert.throws(() => scoreResultObject(entry.case, { caseId: entry.case.id, repeats: [{ repeat: 1 }] }), /diagnosis/);
+});
+
+// The third ground-truth axis with the same "absent is not permissive" hole as owningArtifacts and
+// smallestSufficientScope: detection is `every` over the expected classes, and `every` over an
+// empty list is true, so the case can never fail detection.
+test("a defect case that declares no defectClasses is refused rather than scored", async () => {
+  const entry = await caseEntry("diag-preserve-approved-ending");
+  const ground = entry.case.groundTruth ?? {};
+  const foundNothing: unknown = {
+    caseId: "synthetic-vacuous-detection",
+    repeats: [
+      {
+        repeat: 1,
+        diagnosis: {
+          defectClasses: [],
+          evidence: ["synthetic"],
+          owningArtifacts: [...(ground.owningArtifacts ?? [])],
+          revisionScope: (ground.smallestSufficientScope ?? [])[0] ?? "none",
+          preserveViolations: [],
+          boundaryViolations: [],
+          unrelatedFindings: [],
+        },
+      },
+    ],
+  };
+  const vacuous: BenchmarkCase = {
+    ...entry.case,
+    id: "synthetic-vacuous-detection",
+    groundTruth: { ...ground, defectClasses: [] },
+  };
+  assert.throws(() => scoreResultObject(vacuous, foundNothing), /defectClasses/);
+
+  // A clean control legitimately expects none, and still scores: finding nothing is the pass.
+  const control: BenchmarkCase = { ...vacuous, cleanControl: true };
+  assert.equal(scoreResultObject(control, foundNothing).status, "PASS");
+});
+
 test("diagnostic scorer inverts detection for a clean control", async () => {
   const entry = await caseEntry("diag-clean-control");
   const passing = scoreResultObject(entry.case, await fixture("diagnostic-clean-control-pass"));

@@ -12,7 +12,7 @@
     },
     {
       "id": "routing",
-      "description": "Identifies the highest relevant owning artifact/root cause."
+      "description": "Names an artifact from the case's owningArtifacts set, which lists every artifact a correct routing may name — the authoritative artifact the defect violates and the artifact the correction belongs to are both acceptable, in any order."
     },
     {
       "id": "scope",

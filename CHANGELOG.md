@@ -25,6 +25,9 @@ All notable project changes should be recorded here.
 - A malformed `hardGateFailures` value now throws instead of reading as "no gate failed", which could publish a failing run as a green baseline.
 - Diagnostic ground truth must declare a non-empty `owningArtifacts` and `smallestSufficientScope`; omitting them silently inverted the routing and scope axes so that refusing to answer scored a pass.
 - `defectClasses` and `owningArtifacts` comparisons are trimmed and case folded, matching how revision scope was already compared.
+- A recorded diagnosis is now parsed field by field: every one of the seven response-schema fields must be present and correctly typed. A malformed or absent `preserveViolations`, `boundaryViolations` or `unrelatedFindings` previously read as "nothing to report" and passed its axis on every diagnostic case, the same false green already rejected for `hardGateFailures`.
+- A diagnostic defect case must declare a non-empty `groundTruth.defectClasses`, and a clean control must declare none. Detection is an `every` over the expected classes, so a defect case without them could never fail detection.
+- Corrected the `routing` axis description in `benchmarks/rubrics/diagnostic.json` and the routing heading in the testing specification, which still asked for "the highest relevant owning artifact" after `owningArtifacts` became a set. The rubric is the instruction handed to the human reviewer, so it disagreed with the scorer.
 
 ### Changed
 
